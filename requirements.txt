@@ -1,0 +1,8 @@
+click>=8.0.1
+numpy>=1.20.3
+pandas>=1.2.4
+pyodbc>=4.0.0
+python-dateutil>=2.8.1
+requests>=2.20.1
+six
+SQLAlchemy==1.4.18

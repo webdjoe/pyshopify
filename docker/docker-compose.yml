@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+    sqlserver:
+        build: .
+        image: shopsql
+        container_name: shopsql
+        ports:
+            - "1433:1433"
+        environment:
+            - "SA_PASSWORD=Thepassword1!"
+            - "MSSQL_SA_PASSWORD=Thepassword1!"
+            - ACCEPT_EULA=Y
+        volumes:
+            - "./app:/root/app"
+            - "./data:/var/opt/mssql"
+            - "./config:/root/config"
