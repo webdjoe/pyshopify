@@ -27,7 +27,6 @@ class ShopifyApp:
     """Shopify API Runner Class."""
     def __init__(self, config_dir: str = None):
         self.starttime = timeit.default_timer()
-        log("Start at  " + str(timeit.default_timer() - self.starttime) + "\n")
         if config_dir is not None:
             self.configuration = Config(config_dir)
         else:
@@ -37,8 +36,6 @@ class ShopifyApp:
         self.custom_dict = {}
         self.custom_enable = self.configuration.custom_enable
         self.connection = None
-
-        log("Finish Config Parse at  " + str(timeit.default_timer() -self.starttime) + "\n")
 
         self.engine = None
         if ProgrammingError is None or sql_send is None or sql_connect is None:
@@ -51,19 +48,14 @@ class ShopifyApp:
         self.sql_conf = self.configuration.sql_conf
         self.order_url = self.shop_config.get('url_base') + self.shop_config.get('order_ep')
         self.csv_dir = self.csv_config.get('filepath')
-        log("Finish Config Getter at  " + str(timeit.default_timer() -self.starttime) + "\n")
 
         self.start_date = None
         self.end_date = None
-        log("Start SQL at  " + str(timeit.default_timer() -self.starttime) + "\n")
         if self.sql_enable:
             self.connection, self.engine = sql_connect(self.sql_conf)
             if not self.connection or not self.engine:
                 raise ProgrammingError("Unable to log in to database")
-        log("Start date config  " + str(timeit.default_timer() -self.starttime) + "\n")
         self.start_date, self.end_date = self.date_config()
-
-        log("End Date - " + str(timeit.default_timer() - self.starttime))
         if not self.start_date or not self.end_date:
             raise ValueError
 
@@ -105,11 +97,9 @@ class ShopifyApp:
 
     def app_runner(self) -> Union[Dict[str, DataFrame], None]:
         """Call API method and run SQL, CSV and data exports."""
-        log("Start app at  " + str(timeit.default_timer() -self.starttime) + "\n")
+
         i = 1
         table_dict = self.shopify_runner()
-        log("End Runner  " + str(timeit.default_timer() - self.starttime) + "\n")
-
         while True:
             try:
                 table_data = next(table_dict)
@@ -133,8 +123,6 @@ class ShopifyApp:
 
     def shopify_runner(self):
         """shopify API data iterator."""
-        log(f"*********Inventory update running - {dt.now().strftime('%b-%d-%Y')}*************")
-        log('\n')
         col_list = [str(key) for key in return_keys]
         col_str = ",".join(col_list)
         init_params = {
@@ -146,7 +134,6 @@ class ShopifyApp:
         }
 
         j = 1
-        log("Start order iter  " + str(timeit.default_timer() - self.starttime) + "\n")
 
         while self.order_url is not None:
             if j == 1:
@@ -154,14 +141,9 @@ class ShopifyApp:
             else:
                 page = True
             j += 1
-            log("Start Order iter  " + str(timeit.default_timer() - self.starttime) + "\n")
-
             resp = api_call(self.order_url, self.shop_config, init_params=init_params, page=page)
-            log("API CALL  " + str(timeit.default_timer() - self.starttime) + "\n")
             self.order_url, self.retry_after = header_link(resp.headers)
-            log("Order URL  " + str(timeit.default_timer() - self.starttime) + "\n")
             table_dict = pandas_work(resp.json())
-            log("Pandas WSork  " + str(timeit.default_timer() - self.starttime) + "\n")
             if table_dict is None:
                 break
             else:

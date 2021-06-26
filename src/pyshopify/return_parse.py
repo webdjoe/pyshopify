@@ -4,49 +4,40 @@ import json
 from typing import Dict
 import timeit
 from pyshopify.vars import (keys_list,
-                   order_dtypes,
-                   ref_keys,
-                   ref_dtypes,
-                   refli_keys,
-                   adj_keys,
-                   adj_dtypes,
-                   item_keys,
-                   item_dtypes,
-                   cust_map,
-                   cust_cols,
-                   cust_dtypes)
-import sys
-log = sys.stdout.write
+                            order_dtypes,
+                            cust_dtypes,
+                            ref_dtypes,
+                            ref_keys,
+                            refli_keys,
+                            adj_dtypes,
+                            adj_keys,
+                            item_dtypes,
+                            item_keys,
+                            cust_cols,
+                            cust_map
+                            )
 
 
 def pandas_work(json_list: json) -> Dict[str, pd.DataFrame]:
     """Parse orders API return data."""
     starttime = timeit.default_timer()
-    log("Orders Start  " + str(timeit.default_timer() - starttime) + "\n")
     table_dict = {}
 
     orders = pd.json_normalize(json_list, ['orders'])
-    log("Orders Normalize  " + str(timeit.default_timer() - starttime) + "\n")
 
     orders.drop(columns=orders.columns.difference(keys_list), inplace=True, axis='columns')
-    log("Orders Drop Columns  " + str(timeit.default_timer() - starttime) + "\n")
 
     orders.created_at = pd.to_datetime(orders.created_at)
-    log("Orders Datetime  " + str(timeit.default_timer() - starttime) + "\n")
 
     orders.fillna(0)
-    log("Orders fillna  " + str(timeit.default_timer() - starttime) + "\n")
 
     orders = orders.astype(order_dtypes)
-    log("Orders astype  " + str(timeit.default_timer() - starttime) + "\n")
 
     orders['payment_gateway_names'] = orders['payment_gateway_names'].str.replace('[', '', regex=False)
     orders['payment_gateway_names'] = orders['payment_gateway_names'].str.replace(']', '', regex=False)
     orders['payment_gateway_names'] = orders['payment_gateway_names'].str.replace("'", '', regex=False)
-    log("Orders Fix Payment Gateway  " + str(timeit.default_timer() - starttime) + "\n")
 
     orders.rename(columns={'created_at': 'order_date'}, inplace=True)
-    log("Orders Rename Cols  " + str(timeit.default_timer() - starttime) + "\n")
 
     table_dict['Orders'] = orders
 

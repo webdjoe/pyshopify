@@ -12,6 +12,6 @@ services:
             - "MSSQL_SA_PASSWORD=Thepassword1!"
             - ACCEPT_EULA=Y
         volumes:
-            - "./app:/root/app"
+            - "./csv_export:/root/csv_export"
             - "./data:/var/opt/mssql"
-            - "./config:/root/config"
+            - "./config/config.ini:/root/config.ini"

@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pyshopify",
-    version="0.8.8",
+    version="0.9.2",
     author="Joseph Trabulsy",
     author_email="webdjoe@gmail.com",
     description="Shopify Order API library with containeriezed MS SQL database",

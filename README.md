@@ -1,10 +1,26 @@
 # Shopify Orders Rest API Wrapper and Data Export
 
+## Table of Contents
+
+1. [Configuration](#script-configuration-file)
+2. [Base Installation](#installing-base-library)
+3. [Installation with SQL Drivers](#library-with-sql-driver)
+4. [Running the Application as a Module](#running-the-shopifyapp)
+5. [Running as Command Line Applicaiton](#running-as-command-line-application)
+6. [Database Structure](#database-structure)
+    * [Tables](#tablesdocstablestablesmd)
+    * [Stored Procedures](#stored-proceduresdocsproceduresproceduresmd)
+    * [Full Documentation](docs/start.md)
+7. [Database Script](#database-script)
+8. [Docker Container](#docker-container)
+
 This is a python library that pulls and parses shopify rest orders api. Currently the only Shopify endpoint available is the Orders api.
 
 This has the flexibility of exporting the data to a SQL Server ( along with other relational dbs), exporting to csv and returning a dictionary of dataframes.
 
 The Structure of the SQL Database is in the Docs folder, an SQL script to build the database is in the scripts folder.
+
+A fully contained docker container with `docker-compose.yml` is included for easy deployment. Container contains Microsoft SQL Server 2019 with this library installed for easily running without very much configuration.
 
 ## Script Configuration file
 Configuration is done through an ini based file. Here is the template:
@@ -56,7 +72,7 @@ filepath = csv_export
 enable = False
 ```
 
-The configuration file will default to `config.ini` in the current working directory. A custom path can be defined by passing to `ShopifyApp('rel/path/config.ini')` when instantiating or the `cli_runner --config rel/path/config.ini`
+The configuration file will default to `config.ini` in the current working directory. A custom path can be defined by passing to `ShopifyApp('rel/path/config.ini')` when instantiating or the `shopify_cli --config rel/path/config.ini`
 
 ## Installing Base Library
 
@@ -115,6 +131,7 @@ line_items = run.get("LineItems")
 customer_orders = run.get("OrderCustomers")
 ```
 
+## Running as Command Line Application
 From command line:
 ```shell script
 # There are different command options
@@ -178,7 +195,7 @@ Click on each item for more details.
 
 #### `shop_rest` is the default database name. Remember to change config.ini if using a different database name. 
 
-### ![Table](docs/Images/table.svg) [Tables](docs/Tables/Tables.md)    
+### [Tables](docs/Tables/Tables.md)    
 
 |Name|Description
 |---|---
@@ -190,7 +207,7 @@ Click on each item for more details.
 |[dbo.RefundLineItem](docs/Tables/dbo.RefundLineItem.md)|Refunded Units|
 |[dbo.Refunds](docs/Tables/dbo.Refunds.md)|Order Refunds |
 
-### ![Procedure](docs/Images/procedure.svg) [Stored Procedures](Docs/Procedures/Procedures.md)
+###  [Stored Procedures](Docs/Procedures/Procedures.md)
 
 |Name|Description
 |---|---
@@ -240,7 +257,16 @@ $ docker exec -it shopsql /opt/mssql-tools/bin/sqlcmd -h -1 -t 1 -U sa -P "$SA_P
 ```
 `shopify_cli` can be called in container to update database. Or the server can be updated from an external application.
 ```shell script
-$ docker exec -it shopsql /bin/bash shopify_cli -d 30 --no-csv --sql-out
-$ docker exec -it shopsql /bin/bash shopify_cli -b 20200101 20201231 --no-csv --sql-out
+Get last 30 days of data and import into SQL Server running in container
+$ docker exec -it shopsql shopify_cli -d 30 --no-csv --sql-out
+
+Get data between dates and import into SQL Server running on container 
+$ docker exec -it shopsql shopify_cli -b 20200101 20201231 --no-csv --sql-out
 ```
 
+`shopify_cli` can also be run from container to get data in csv files in the csv_export folder
+```shell script
+$ docker exec -it shopsql shopify_cli --csv-out
+$ cd csv_export
+```
+ 
