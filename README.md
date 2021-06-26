@@ -224,6 +224,10 @@ A [DateDimension](docs/Tables/dbo.DateDimension.md) table is included for easier
 
 To build the dataabse, run the [setup.sql](docker/scripts/setup.sql) script in the `docker/scripts` folder. This has only been tested on Microsoft SQL Server 2019 but can easily be adapted for other databases. It will set up all of the required tables and stored procedures.
 
+The `DateDimension` table can be created from the [dates.sql](docker/scripts/dates.sql) script in the [docker/scripts](docker/scripts) fold.
+
+Both are ran automatically when running the docker container.
+
 ## Docker Container
 
 There is a Dockerfile and docker-compose.yml in the [docker](docker) folder. This is based on the Microsoft SQL Server 2019 container running on Ubuntu. It installs all of the necessary applications to run pyshopify and a database instance to write to. 

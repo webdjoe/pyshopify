@@ -13,6 +13,7 @@ do
     NUMDBS=$(/opt/mssql-tools/bin/sqlcmd -h -1 -t 1 -U sa -P "$SA_PASSWORD" -Q "SET NOCOUNT ON; Select COUNT(*) from sys.databases")
     if [ "$NUMDBS" -eq "4" ]; then
       /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -d master -i /usr/scripts/setup.sql
+      /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -d master -i /usr/scripts/dates.sql
       echo "Database setup completed"
       break
     fi
