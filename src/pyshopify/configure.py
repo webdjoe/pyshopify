@@ -17,7 +17,8 @@ class Config:
                 'enable': False,
             },
             'csv': {
-                'enable': False
+                'enable': False,
+                'filepath': 'csv_export'
             },
             'custom': {
                 'enable': False

@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pyshopify",
-    version="0.9.2",
+    version="0.9.3",
     author="Joseph Trabulsy",
     author_email="webdjoe@gmail.com",
     description="Shopify Order API library with containeriezed MS SQL database",
@@ -32,7 +32,7 @@ setuptools.setup(
     ],
     package_dir={'': 'src'},
     packages=find_packages('src', exclude=["test"]),
-    python_requires=">=3.8",
+    python_requires=">=3.7",
     entry_points={
         'console_scripts': [
             'shopify_cli = pyshopify.cli:cli_runner',

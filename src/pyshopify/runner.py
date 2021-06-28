@@ -1,14 +1,16 @@
 """Shopify API Runner."""
-from datetime import timedelta, datetime as dt
-from dateutil import parser
-from typing import Tuple, List, Dict, Union
-from pandas import DataFrame
 import sys
-from pyshopify.api import api_call, header_link
-from pyshopify.return_parse import pandas_work
-from pyshopify.csv_out import csv_writer
-from pyshopify.configure import Config
 import timeit
+from datetime import timedelta, datetime as dt
+from typing import Tuple, List, Dict, Union
+
+from dateutil import parser
+from pandas import DataFrame
+
+from pyshopify.api import api_call, header_link
+from pyshopify.configure import Config
+from pyshopify.csv_out import csv_writer
+from pyshopify.return_parse import pandas_work
 from pyshopify.vars import return_keys
 
 log = sys.stdout.write
@@ -52,12 +54,24 @@ class ShopifyApp:
         self.start_date = None
         self.end_date = None
         if self.sql_enable:
-            self.connection, self.engine = sql_connect(self.sql_conf)
+            self.sql_alive = self.sql_connect()
             if not self.connection or not self.engine:
                 raise ProgrammingError("Unable to log in to database")
+        else:
+            self.sql_alive = False
         self.start_date, self.end_date = self.date_config()
         if not self.start_date or not self.end_date:
             raise ValueError
+
+    def sql_connect(self) -> bool:
+        if ProgrammingError is not None and \
+                sql_send is not None and \
+                sql_connect is not None:
+            self.connection, self.engine = sql_connect(self.sql_conf)
+            if not self.connection or not self.engine:
+                raise ProgrammingError("Unable to log in to database")
+            return True
+        return False
 
     def date_config(self) -> Tuple[str, str]:
         """Get dates from configuration."""
@@ -95,9 +109,16 @@ class ShopifyApp:
             end_date = dt.isoformat(btw[0]) + "-05:00"
         return start_date, end_date
 
+    def app_iterator(self):
+        """Iterate through API returns for large datasets.
+            Perform tasks after each call.
+        """
+        table_dict = self.shopify_runner()
+        for shop_return in table_dict:
+            yield shop_return
+
     def app_runner(self) -> Union[Dict[str, DataFrame], None]:
         """Call API method and run SQL, CSV and data exports."""
-
         i = 1
         table_dict = self.shopify_runner()
         while True:
@@ -108,18 +129,17 @@ class ShopifyApp:
 
             i += 1
 
-            if self.sql_enable:
+            if self.sql_alive:
                 sql_return = sql_send(table_data, i, self.connection, self.engine)
                 if not sql_return:
                     break
             if self.csv_enable:
                 csv_writer(table_data, i, self.csv_dir)
-        if self.sql_enable:
+        if self.sql_alive:
             self.connection.close()
         if self.custom_enable:
             return self.custom_dict
-        else:
-            return None
+        return None
 
     def shopify_runner(self):
         """shopify API data iterator."""
@@ -146,11 +166,11 @@ class ShopifyApp:
             table_dict = pandas_work(resp.json())
             if table_dict is None:
                 break
-            else:
-                if self.custom_enable:
-                    for keys in table_dict:
-                        if j == 2:
-                            self.custom_dict[keys] = table_dict.get(keys).copy()
-                        else:
-                            self.custom_dict[keys].append(table_dict.get(keys))
-                yield table_dict
+
+            if self.custom_enable:
+                for keys in table_dict:
+                    if j == 2:
+                        self.custom_dict[keys] = table_dict.get(keys).copy()
+                    else:
+                        self.custom_dict[keys].append(table_dict.get(keys))
+            yield table_dict

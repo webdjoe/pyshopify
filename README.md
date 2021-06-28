@@ -98,17 +98,54 @@ The primary class is `ShopifyApp()` which contains all of the necessary executio
 
 Can be run two ways:
 
-As a module:
+As a module, instantiating `ShopifyApp` and running `app_runner()`. If custom is disabled, it will return None. If custom is enabled, a dictionary of dataframes of the entire api call is returned. 
 ```python
 from pyshopify.runner import ShopifyApp
 
-# Get one day history of orders and return flattened dictionary
-shop_class = ShopifyApp('rel/dir/to/config.ini')
+# If no value is passed, the program will try to use a file in the working directory named config.ini
+shop_instance = ShopifyApp('rel/dir/to/config.ini')
 
+run = shop_instance.app_runner()
+```
+
+By enabling custom in the configuration, the entire API call is combined into a single dictionary. This can be a large amount of data, and want to apply logic in between each call.
+In this case, use the app_iterator() method
+
+```python
+api_iterator = shop_instance.app_iterator()
+for api_return in api_iterator:
+    #Perform logic here, return dictionary is in same structure as the full dictionary from app_runner()
+    print(api_iterator.get('Refunds'))
+```
+
+The configuration can be set after you've instantiated the class:
+```python
+shop_instance = ShopifyApp()
+shop_instance.csv_enable = True # enables csv output
+shop_instance.custom_enable = True # Enabled full output
+```
+Enabling SQL output is possible but slightly more involved.
+```python
+shop_instance = ShopifyApp()
+shop_instance.sql_conf = {
+    'enabled': True,
+    'driver': 'ODBC Driver 17 for SQL Server',
+    'server': 'localhost',
+    'database': 'shop_rest',
+    'db_user': 'sa',
+    'db_password': 'StrongDBPassword'
+}
+shop_app.sql_alive = shop_app.sql_connect()
+```
+shop_app.sql_alive should return true if connected to database. An error will be raised if unable to connect
+
+
+The return value of `app_runner()` and `app_iterator()` is a dictionary of dataframes in the structure below. This structure mirrors the structure of the database output.  
+
+```python
+from pyshopify.runner import ShopifyApp
+shop_class = ShopifyApp()
 run = ShopifyApp.app_runner()
-
-# if custom is enabled -
-# Dataframe columns are same as database columns 
 
 # Order Details
 # ['id' 'order_date' 'fulfillment_status' 'name' 'number' 'order_number', 'payment_gateway_names' 'processing_method' 'source_name', 'subtotal_price' 'total_discounts' 'total_line_items_price' 'total_price', 'total_price_usd' 'total_tax' 'total_weight']
