@@ -9,10 +9,6 @@
 ```SQL
 SET QUOTED_IDENTIFIER, ANSI_NULLS ON
 GO
--- =============================================
--- Author:	Joseph Trabulsy
--- Description:	Merge tmp_tbl with reflineitems
--- =============================================
 CREATE OR ALTER PROCEDURE dbo.reflineitem_update 
 
 AS

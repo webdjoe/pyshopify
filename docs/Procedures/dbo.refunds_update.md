@@ -8,10 +8,7 @@
 ```SQL
 SET QUOTED_IDENTIFIER, ANSI_NULLS ON
 GO
--- =============================================
--- Author:	Joseph Trabulsy
--- Description:	Merge Refunds table with tmp_tbl
--- =============================================
+
 CREATE OR ALTER PROCEDURE dbo.refunds_update 
 
 AS

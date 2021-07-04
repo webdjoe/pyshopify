@@ -9,10 +9,6 @@
 ```SQL
 SET QUOTED_IDENTIFIER, ANSI_NULLS ON
 GO
--- =============================================
--- Author:	Joseph Trabulsy
--- Description:	Merge line items with tmp_tbl
--- =============================================
 CREATE OR ALTER PROCEDURE dbo.lineitems_update 
 
 AS

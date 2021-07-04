@@ -9,10 +9,6 @@
 ```SQL
 SET QUOTED_IDENTIFIER, ANSI_NULLS ON
 GO
--- =============================================
--- Author:	Joseph Trabulsy
--- Description:	Merge tmp_tbl with customer orders 
--- =============================================
 CREATE OR ALTER PROCEDURE dbo.cust_update 
 
 AS

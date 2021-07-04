@@ -1,3 +1,5 @@
+from numpy import dtype
+
 db_spec = True
 try:
     import sqlalchemy.types as sqlt
@@ -24,6 +26,11 @@ return_keys = [
     'customer',
     'line_items',
     'refunds',
+    'email',
+    'discount_applications',
+    'discount_codes',
+    'updated_at',
+    'shipping_lines'
 
 ]
 
@@ -43,7 +50,9 @@ keys_list = [
     'processing_method',
     'source_name',
     'fulfillment_status',
-    'payment_gateway_names'
+    'payment_gateway_names',
+    'email',
+    'updated_at'
 
 ]
 
@@ -66,7 +75,9 @@ def DBSpec():
             'processing_method': sqlt.String,
             'source_name': sqlt.String,
             'fulfillment_status': sqlt.String,
-            'payment_gateway_names': sqlt.String
+            'payment_gateway_names': sqlt.String,
+            'email': sqlt.String,
+            'updated_at': sqlt.DateTime
         }
         ref_types = {
             'id': sqlt.BigInteger,
@@ -98,7 +109,13 @@ def DBSpec():
             'order_date': sqlt.DateTime,
             'variant_id': sqlt.BigInteger,
             'quantity': sqlt.Integer,
-            'price': sqlt.Float
+            'price': sqlt.Float,
+            'name': sqlt.String,
+            'product_id': sqlt.BigInteger,
+            'sku': sqlt.String,
+            'title': sqlt.String,
+            'total_discount': sqlt.Float,
+            'variant_title': sqlt.String
         }
         trans_types = {
             'id': sqlt.BigInteger,
@@ -116,6 +133,39 @@ def DBSpec():
             'created_at': sqlt.DateTime,
             'total_spent': sqlt.Float
         }
+        discapp_types = {
+            'order_id': sqlt.BigInteger,
+            'order_date': sqlt.DateTime,
+            'type': sqlt.String,
+            'title': sqlt.String,
+            'description': sqlt.String,
+            'value': sqlt.NUMERIC,
+            'value_type': sqlt.String,
+            'allocation_method': sqlt.String,
+            'target_selection': sqlt.String,
+            'target_type': sqlt.String
+        }
+        disccodes_types = {
+            'order_id': sqlt.BigInteger,
+            'order_date': sqlt.DateTime,
+            'code': sqlt.String,
+            'amount': sqlt.DECIMAL,
+            'type': sqlt.String,
+        }
+        shipline_types = {
+            'id': sqlt.String,
+            'carrier_identifier': sqlt.String,
+            'code': sqlt.String,
+            'delivery_category': sqlt.String,
+            'ship_discount_price': sqlt.Float,
+            'phone': sqlt.String,
+            'ship_price': sqlt.Float,
+            'requested_fulfillment_id': sqlt.String,
+            'source': sqlt.String,
+            'title': sqlt.String,
+            'order_id': sqlt.BigInteger,
+            'order_date': sqlt.DateTime,
+        }
     else:
         order_types = {}
         ref_types = {}
@@ -124,6 +174,9 @@ def DBSpec():
         item_types = {}
         trans_types = {}
         cust_types = {}
+        discapp_types = {}
+        disccodes_types = {}
+        shipline_types = {}
 
     return {
         'Refunds': ref_types,
@@ -132,26 +185,28 @@ def DBSpec():
         'RefundLineItem': refli_types,
         'Adjustments': adj_types,
         'Transactions': trans_types,
-        'Customers': cust_types
+        'Customers': cust_types,
+        'DiscountApps': discapp_types,
+        'DiscountCodes': disccodes_types,
+        'ShipLines': shipline_types
         }
 
 
 order_dtypes = {
-    'id': 'string',
-    'number': 'int64',
-    'total_price': 'float64',
-    'subtotal_price': 'float64',
-    'total_weight': 'float64',
-    'total_tax': 'float64',
-    'total_discounts': 'float64',
-    'total_line_items_price': 'float64',
-    'name': 'string',
-    'total_price_usd': 'float64',
-    'order_number': 'int64',
-    'processing_method': 'string',
-    'source_name': 'string',
-    'fulfillment_status': 'string',
-    'payment_gateway_names': 'string'
+    'number': dtype('int64'),
+    'total_price': dtype('float64'),
+    'subtotal_price': dtype('float64'),
+    'total_weight': dtype('float64'),
+    'total_tax': dtype('float64'),
+    'total_discounts': dtype('float64'),
+    'total_line_items_price': dtype('float64'),
+    'name': dtype('O'),
+    'total_price_usd': dtype('float64'),
+    'order_number': dtype('int64'),
+    'processing_method': dtype('O'),
+    'source_name': dtype('O'),
+    'fulfillment_status': dtype('O'),
+    'email': dtype('O')
 }
 
 ref_keys = [
@@ -161,8 +216,8 @@ ref_keys = [
 ]
 
 ref_dtypes = {
-    'id': 'int64',
-    'order_id': 'int64'
+    'id': dtype('int64'),
+    'order_id': dtype('int64')
 }
 
 
@@ -178,14 +233,14 @@ refli_keys = [
 ]
 
 refli_dtypes = {
-    'id': 'int64',
-    'refund_id': 'int64',
-    'order_id': 'int64',
-    'line_item_id': 'int64',
-    'quantity': 'int64',
-    'variant_id': 'int64',
-    'subtotal': 'float64',
-    'total_tax': 'float64'
+    'id': dtype('int64'),
+    'refund_id': dtype('int64'),
+    'order_id': dtype('int64'),
+    'line_item_id': dtype('int64'),
+    'quantity': dtype('int64'),
+    'variant_id': dtype('int64'),
+    'subtotal': dtype('float64'),
+    'total_tax': dtype('float64')
 }
 
 
@@ -201,13 +256,13 @@ adj_keys = [
 ]
 
 adj_dtypes = {
-    'id': 'int64',
-    'refund_id': 'int64',
-    'order_id': 'int64',
-    'amount': 'float64',
-    'tax_amount': 'float64',
-    'kind': 'string',
-    'reason': 'string'
+    'id': dtype('int64'),
+    'refund_id': dtype('int64'),
+    'order_id': dtype('int64'),
+    'amount': dtype('float64'),
+    'tax_amount': dtype('float64'),
+    'kind': dtype('O'),
+    'reason': dtype('O')
 }
 
 item_keys = [
@@ -216,15 +271,28 @@ item_keys = [
     'variant_id',
     'quantity',
     'price',
-    'order_date'
+    'order_date',
+    'name',
+    'product_id',
+    'sku',
+    'title',
+    'total_discount',
+    'variant_title',
+
 ]
 
 item_dtypes = {
-    'id': 'int64',
-    'order_id': 'int64',
-    'variant_id': 'int64',
-    'quantity': 'float64',
-    'price': 'float64'
+    'id': dtype('int64'),
+    'order_id': dtype('int64'),
+    'variant_id': dtype('int64'),
+    'quantity': dtype('float64'),
+    'price': dtype('float64'),
+    'name': dtype('O'),
+    'product_id': dtype('int64'),
+    'sku': dtype('O'),
+    'title': dtype('O'),
+    'total_discount': dtype('float64'),
+    'variant_title': dtype('O')
 }
 
 trans_keys = [
@@ -237,22 +305,22 @@ trans_keys = [
 ]
 
 trans_dtypes = {
-    'id': 'int64',
-    'source_order_id': 'int64',
-    'type': 'string',
-    'fee': 'float64',
-    'amount': 'float64'
+    'id': dtype('int64'),
+    'source_order_id': dtype('int64'),
+    'type': dtype('O'),
+    'fee': dtype('float64'),
+    'amount': dtype('float64')
 }
 
 
 
 
 cust_dtypes = {
-    'order_id': 'int64',
-    'customer_id': 'int64',
-    'orders_count': 'int64',
-    'email': 'string',
-    'total_spent': 'float64'
+    'order_id': dtype('int64'),
+    'customer_id': dtype('int64'),
+    'orders_count': dtype('int64'),
+    'email': dtype('O'),
+    'total_spent': dtype('float64')
 }
 
 
@@ -285,7 +353,93 @@ cust_map = {
     'customer_total_spent': 'total_spent'
 }
 
+discapp_keys = [
+    'order_id',
+    'order_date',
+    'type',
+    'code',
+    'title',
+    'description',
+    'value',
+    'value_type',
+    'allocation_method',
+    'target_selection',
+    'target_type'
+]
 
+discapp_dtypes = {
+    'order_id': dtype('int64'),
+    'type': dtype('O'),
+    'title': dtype('O'),
+    'value': dtype('float64'),
+    'value_type': dtype('O'),
+    'allocation_method': dtype('O'),
+    'target_selection': dtype('O'),
+    'target_type': dtype('O'),
+    'code': dtype('O')
+}
+
+discapp_map = {
+    'orders_id': 'order_id',
+    'orders_created_at': 'order_date'
+}
+
+disccode_keys = [
+    'order_id',
+    'created_at',
+    'code',
+    'amount',
+    'type'
+]
+
+disccode_dtypes = {
+    'order_id': 'int64',
+    'code': 'string',
+    'type': 'string',
+    'amount': 'float64'
+}
+
+disccode_map = {
+    'orders_id': 'order_id',
+    'orders_created_at': 'order_date'
+}
+
+shipline_keys = [
+    'id',
+    'carrier_identifier',
+    'code',
+    'delivery_category',
+    'discounted_price',
+    'phone',
+    'price',
+    'discounted_price',
+    'requested_fulfillment_id',
+    'source',
+    'title',
+    'orders.id',
+    'orders.created_at'
+]
+
+shipline_dtypes = {
+    'id': 'string',
+    'carrier_identifier': 'string',
+    'code': 'string',
+    'delivery_category': 'string',
+    'ship_discount_price': 'float64',
+    'phone': 'string',
+    'ship_price': 'float64',
+    'requested_fulfillment_id': 'string',
+    'source': 'string',
+    'title': 'string',
+    'order_id': 'int64',
+}
+
+shipline_map = {
+    'orders.id': 'order_id',
+    'orders.created_at': 'order_date',
+    'price': 'ship_price',
+    'discounted_price': 'ship_discount_price'
+}
 
 proc_dict = {
     'Orders': 'orders_update',
@@ -293,6 +447,9 @@ proc_dict = {
     'LineItems': 'lineitems_update',
     'RefundLineItem': 'reflineitem_update',
     'Adjustments': 'adjustments_update',
-    'Customers': 'cust_update'
+    'Customers': 'cust_update',
+    'DiscountApps': 'discapp_update',
+    'DiscountCodes': 'disccode_update',
+    'ShipLines': 'shipline_update'
 
 }

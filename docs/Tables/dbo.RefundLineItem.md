@@ -5,16 +5,16 @@
 ## <a name="#Description"></a>Description
 > Refunded Units
 ## <a name="#Columns"></a>Columns _`8`_
-|Key|Name|Data Type|Length|Precision|Scale|Not Null|Identity|Rule|Default|Computed|Persisted|Description
-|---|---|---|---|---|---|---|---|---|---|---|---|---
-|[![Primary Key PK_refundlineitem_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_refundlineitem_id](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True||||False|False|Refund Line Item ID|
-||refund_id|bigint|8|19|0|True||||False|False|Refund ID|
-||order_id|bigint|8|19|0|True||||False|False|Order ID|
-||line_item_id|bigint|8|19|0|True||||False|False|Line Item ID|
-||variant_id|bigint|8|19|0|True||||False|False|Line Item Variant ID|
-||quantity|int|4|10|0|True||||False|False|Quantity Refunded|
-||subtotal|float|8|53|0|True||||False|False|Refund Line Item Subtotal|
-||total_tax|float|8|53|0|True||||False|False|Refund Line Item Tax|
+|Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
+|---|---|---|---|---|---|---|---
+|[![Primary Key PK_refundlineitem_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_refundlineitem_id](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Refund Line Item ID|
+| |refund_id|bigint|8|19|0|True|Refund ID|
+| |order_id|bigint|8|19|0|True|Order ID|
+| |line_item_id|bigint|8|19|0|True|Line Item ID|
+| |variant_id|bigint|8|19|0|True|Line Item Variant ID|
+| |quantity|int|4|10|0|True|Quantity Refunded|
+| |subtotal|float|8|53|0|True|Refund Line Item Subtotal|
+| |total_tax|float|8|53|0|True|Refund Line Item Tax|
 
 ## <a name="#Indexes"></a>Indexes _`1`_
 |Key|Name|Columns|Unique|Type|Description

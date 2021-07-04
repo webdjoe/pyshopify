@@ -10,6 +10,8 @@
 |---|---
 |[dbo.Adjustments](Tables/dbo.Adjustments.md)|Order Refund Adjustments|
 |[dbo.DateDimension](Tables/dbo.DateDimension.md)|Date Dimension Table for Analysis|
+|[dbo.DiscountApps](Tables/dbo.DiscountApps.md)|Discount Applications for Each Order|
+|[dbo.DiscountCodes](Tables/dbo.DiscountCodes.md)|Discount Codes In Use for Each Order|
 |[dbo.LineItems](Tables/dbo.LineItems.md)|Line Items with Units Sold for Orders|
 |[dbo.OrderCustomers](Tables/dbo.OrderCustomers.md)|Customer Info based on Order ID|
 |[dbo.Orders](Tables/dbo.Orders.md)|Order Details|
@@ -22,6 +24,8 @@
 |---|---
 |[dbo.adjustments_update](Procedures/dbo.adjustments_update.md)|Update Adjustments|
 |[dbo.cust_update](Procedures/dbo.cust_update.md)|Update Customer Orders Table|
+|[dbo.discapp_update](Procedures/dbo.discapp_update.md)|Update discounts applied table|
+|[dbo.disccode_update](Procedures/dbo.disccode_update.md)|Update discount codes used table|
 |[dbo.lineitems_update](Procedures/dbo.lineitems_update.md)|Update Line Items|
 |[dbo.orders_update](Procedures/dbo.orders_update.md)|Merge Orders|
 |[dbo.reflineitem_update](Procedures/dbo.reflineitem_update.md)|Merge Refunded Line Items|

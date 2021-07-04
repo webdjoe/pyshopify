@@ -37,14 +37,13 @@ def sql_send(table_dict: dict, j: int, connection: con, engine) -> bool:
         log(f"Run {j - 1} - First order date - {ord_date}")
         log('\n')
     for k, v in table_dict.items():
-
-        if k != 'Customers':
-            ilabel = v['id']
-        else:
-            ilabel = v['order_id']
+        # if k != 'Customers':
+        #     ilabel = v['id']
+        # else:
+        #     ilabel = v['order_id']
         ddict = sqalch_dict()
         dtype_name = ddict[k]
-        v.to_sql(tmptbl, con=engine, if_exists='replace', index=False, index_label=ilabel, dtype=dtype_name)
+        v.to_sql(tmptbl, con=engine, if_exists='replace', index=False, dtype=dtype_name)
         cursor.execute(proc_dict[k])
         log(f"Run {j - 1} - {len(v.index)} {k} written")
         log('\n')

@@ -1,5 +1,17 @@
 # Shopify Orders Rest API Wrapper and Data Export
 
+The purpose of this repository is to allow easier Shopify data analysis using any SQL or and BI tools that support sql. Shopify's rest API is not data analysis friendly, returning one large, denormalized dataset. This library yields a more normalized dataset that can be used to populate a database or perform a direct analysis.
+
+This repository has two part - 
+1) Python app - pulls data from shopify orders api into dataframes
+2) [Docker container](docker/) - fully self contained database and app
+
+This has the flexibility of exporting the data to a SQL Server ( along with other relational dbs), exporting to csv and returning a dictionary of dataframes.
+
+The Structure of the SQL Database is described in depth in the [Docs](docs/) folder, an SQL script to build the database is in the scripts folder [setup.sql](docker/scripts/setup.sql).
+
+A fully contained docker container with `docker-compose.yml` is included for simple deployment. Container contains Microsoft SQL Server 2019 with this library installed for easily running with a small amount of configuration.
+
 ## Table of Contents
 
 1. [Configuration](#script-configuration-file)
@@ -13,17 +25,12 @@
     * [Full Documentation](docs/start.md)
 7. [Database Script](#database-script)
 8. [Docker Container](#docker-container)
+9. [Useful Queries](#useful-queries)
 
-This is a python library that pulls and parses shopify rest orders api. Currently the only Shopify endpoint available is the Orders api.
 
-This has the flexibility of exporting the data to a SQL Server ( along with other relational dbs), exporting to csv and returning a dictionary of dataframes.
-
-The Structure of the SQL Database is in the Docs folder, an SQL script to build the database is in the scripts folder.
-
-A fully contained docker container with `docker-compose.yml` is included for easy deployment. Container contains Microsoft SQL Server 2019 with this library installed for easily running without very much configuration.
 
 ## Script Configuration file
-Configuration is done through an ini based file. Here is the template:
+The python script is configured through an ini based file. Here is the template:
 ```ini
 [shopify]
 # Orders API Endpoint
@@ -148,24 +155,37 @@ shop_class = ShopifyApp()
 run = ShopifyApp.app_runner()
 
 # Order Details
-# ['id' 'order_date' 'fulfillment_status' 'name' 'number' 'order_number', 'payment_gateway_names' 'processing_method' 'source_name', 'subtotal_price' 'total_discounts' 'total_line_items_price' 'total_price', 'total_price_usd' 'total_tax' 'total_weight']
+# ['id' 'order_date' 'fulfillment_status' 'name' 'number' 'order_number', 'payment_gateway_names' 'processing_method' 'source_name', 'subtotal_price' 'total_discounts' 'total_line_items_price' 'total_price', 'total_price_usd' 'total_tax' 'total_weight', 'email', 'updated_at']
 orders_dataframe = run.get("Orders")
 
 # Refunds Dataframe with Date of Refund and Order ID
 # Columns    ['refund_date', 'order_id']
 refunds_dataframe = run.get("Refunds")
 
-# Dataframe of Refund Line Items Showing Units returned
+# Refund Line Items Showing Units returned
 # ['id', 'line_item_id', 'quantity', 'subtotal', 'total_tax', 'variant_id', 'refund_id', 'order_id']
 refund_lineitems = run.get("RefundLineItems")
 
-# Dataframe of Line Items sold
+# Line Items sold
 # ['id', 'order_id', 'order_date', 'variant_id', 'quantity', 'price']
 line_items = run.get("LineItems")
 
-# Dataframe of customer for each order and customer info
+# Customer info for each order
 # ['order_id', 'order_date', 'email', 'customer_id', 'orders_count', 'total_spent', 'created_at']
 customer_orders = run.get("OrderCustomers")
+
+# Order Shipping Prices
+# [id, order_id, order_date, carrier_identifier, code, delivery_category, ship_discount_price, ship_price, phone, requested_fulfillment_id, source, title]
+shipping_lines = run.get("ShipLines")
+
+# Discount Applications
+# ['order_id', 'order_date', 'type', 'code', 'title', 'description', 'value', 'value_type', 'allocation_method', 'target_selection', 'target_type']
+discount_applications = run.get("DiscountApps")
+
+# Discount Codes
+# ['order_id', 'code', 'type', 'amount']
+discount_codes = run.get('DiscountCodes')
+ 
 ```
 
 ## Running as Command Line Application
@@ -238,22 +258,29 @@ Click on each item for more details.
 |---|---
 |[dbo.Adjustments](docs/Tables/dbo.Adjustments.md)|Order Refund Adjustments|
 |[dbo.DateDimension](docs/Tables/dbo.DateDimension.md)|Date Dimension Table for Analysis|
+|[dbo.DiscountApps](docs/Tables/dbo.DiscountApps.md)|Discount Applications for Each Order|
+|[dbo.DiscountCodes](docs/Tables/dbo.DiscountCodes.md)|Discount Codes In Use for Each Order|
 |[dbo.LineItems](docs/Tables/dbo.LineItems.md)|Line Items with Units Sold for Orders|
 |[dbo.OrderCustomers](docs/Tables/dbo.OrderCustomers.md)|Customer Info based on Order ID|
 |[dbo.Orders](docs/Tables/dbo.Orders.md)|Order Details|
 |[dbo.RefundLineItem](docs/Tables/dbo.RefundLineItem.md)|Refunded Units|
 |[dbo.Refunds](docs/Tables/dbo.Refunds.md)|Order Refunds |
+|[dbo.ShipLines](docs/Tables/dbo.ShipLines.md)|Order shipping lines |
 
-###  [Stored Procedures](Docs/Procedures/Procedures.md)
+###  [Stored Procedures](docs/Procedures/Procedures.md)
 
 |Name|Description
 |---|---
 |[dbo.adjustments_update](docs/Procedures/dbo.adjustments_update.md)|Update Adjustments|
 |[dbo.cust_update](docs/Procedures/dbo.cust_update.md)|Update Customer Orders Table|
+|[dbo.discapp_update](docs/Procedures/dbo.discapp_update.md)| Update discounts applied to each order|
+|[dbo.disccode_update](docs/Procedures/dbo.disccode_update.md)| Update discount codes used for each order|
 |[dbo.lineitems_update](docs/Procedures/dbo.lineitems_update.md)|Update Line Items|
 |[dbo.orders_update](docs/Procedures/dbo.orders_update.md)|Merge Orders|
 |[dbo.reflineitem_update](docs/Procedures/dbo.reflineitem_update.md)|Merge Refunded Line Items|
 |[dbo.refunds_update](docs/Procedures/dbo.refunds_update.md)|Merge Refunds
+|[dbo.shipline_update](docs/Procedures/dbo.shipline_update.md)|Update shipping lines table
+
 
 A [DateDimension](docs/Tables/dbo.DateDimension.md) table is included for easier analysis
 
@@ -261,9 +288,9 @@ A [DateDimension](docs/Tables/dbo.DateDimension.md) table is included for easier
 
 To build the dataabse, run the [setup.sql](docker/scripts/setup.sql) script in the `docker/scripts` folder. This has only been tested on Microsoft SQL Server 2019 but can easily be adapted for other databases. It will set up all of the required tables and stored procedures.
 
-The `DateDimension` table can be created from the [dates.sql](docker/scripts/dates.sql) script in the [docker/scripts](docker/scripts) fold.
+The `DateDimension` table can be created from the [dates.sql](docker/scripts/dates.sql) script in the [docker/scripts](docker/scripts) fold. Credit goes to Aaron Bertrand for this amazing script - [Creating a date dimension or calendar table in SQL Server](https://www.mssqltips.com/sqlservertip/4054/creating-a-date-dimension-or-calendar-table-in-sql-server/)
 
-Both are ran automatically when running the docker container.
+Both are ran automatically when starting the docker container.
 
 ## Docker Container
 
@@ -271,7 +298,7 @@ There is a Dockerfile and docker-compose.yml in the [docker](docker) folder. Thi
 
 NOTE: This is NOT production ready. Security is not hardened, container is run as root user.
 
-Both containers automatically deploy setup.sql to build the required database structure.
+Both containers automatically deploy [setup.sql](docker/scripts/setup.sql) and [dates.sql](docker/scripts/dates.sql) to build the required database structure.
 
 Please make sure to set the password in the `docker-compose.yml` file.
 
@@ -296,7 +323,7 @@ Once started test if SQL server is running. A `0` return value indicates the ser
 ```shell script
 $ docker exec -it shopsql /opt/mssql-tools/bin/sqlcmd -h -1 -t 1 -U sa -P "$SA_PASSWORD" -Q "SET NOCOUNT ON; Select SUM(state) from sys.databases")
 ```
-`shopify_cli` can be called in container to update database. Or the server can be updated from an external application.
+`shopify_cli` can be called in container to update the container's database.
 ```shell script
 Get last 30 days of data and import into SQL Server running in container
 $ docker exec -it shopsql shopify_cli -d 30 --no-csv --sql-out
@@ -306,8 +333,113 @@ $ docker exec -it shopsql shopify_cli -b 20200101 20201231 --no-csv --sql-out
 ```
 
 `shopify_cli` can also be run from container to get data in csv files in the csv_export folder
+Assumes run from the same folder as the docker files. Container links csv_export folder to retreive export without having to copy from container.
 ```shell script
 $ docker exec -it shopsql shopify_cli --csv-out
 $ cd csv_export
 ```
  
+ ## Useful Queries
+ 
+ These scripts assume Shopify has been configured correctly from the start, meaning SKU's, product names and product titles remained consistent. If not, so data cleansing may be required. For example, if your product title has been properly configured you can update SKU's from the `variant_sku` column.
+ 
+#### List all product names, titles, skus and variant SKU's to check for consistency.
+ 
+Resulting table is ordered by quantity sold to check impact of product sku & naming consistency  
+ 
+ ```tsql
+SELECT [variant_id], [name], [product_id], [sku], [title], SUM([quantity]) quantity
+FROM shop_rest.dbo.LineItems
+GROUP BY [variant_id], [name], [product_id], [sku], [title]
+ORDER BY SUM([quantity])
+``` 
+Or check if above a minimum threshold, 10 in this case:
+
+```tsql
+SELECT [variant_id], [name], [product_id], [sku], [title], SUM([quantity]) quantity
+FROM shop_rest.dbo.LineItems
+GROUP BY [variant_id], [name], [product_id], [sku], [title]
+HAVING SUM([quantity]) > 10
+ORDER BY SUM([quantity])
+```
+
+If there are inconsistencies, an easy way to clear up is to import the return table into excel and make a table of variant_id with the correct title and SKU. Import that table into SQL server and join with queries that return `variant_id`.
+
+#### Quantities Sold
+
+Return quantities sold, grouped by month. SKU and title are used as identifiers as identifiers.
+
+```tsql
+SELECT EOMONTH([order_date],0) OrderDate, [sku], [name], SUM([quantity]) Quantity
+FROM shop_rest.dbo.LineItems
+GROUP BY EOMONTH([order_date], 0), [sku], [name]
+ORDER BY [order_date]
+```
+
+If there is inconsistency in product naming and SKU's, use a subquery to join table with the table created containing the variant_id with the corrected SKU's and product titles. The following logic can be applied to any other query containing `variant_id`
+
+```tsql
+SELECT te.OrderDate, te.sku, SUM(te.qty) Quantity FROM
+
+(
+    SELECT CAST(EOMONTH([order_date],0) as date) OrderDate
+        ,vs.[sku]
+        ,vs.[name]
+        ,[sku]
+        ,li.[quantity] qty
+    FROM shop_rest.dbo.LineItems li
+    INNER JOIN shop_rest.dbo.VariantSkus vs 
+        ON li.variant_id = vs.variant_id
+) te
+
+GROUP BY te.OrderDate, te.sku
+ORDER BY te.OrderDate
+``` 
+
+#### Number of returning customers per month
+
+```tsql
+SELECT COUNT(*) AS Customers, CAST(EOMONTH(order_date,0) AS date) AS OrderDate
+    FROM dbo.OrderCustomers
+WHERE [orders_count] > 1
+GROUP BY CAST(EOMONTH(order_date) AS date)
+```
+
+#### Monthly Gross Sales with Discounts.
+
+```tsql
+SELECT CAST(EOMONTH([order_date],0) AS date) Month
+      ,SUM([total_line_items_price]) GrossPrice
+	  ,SUM([total_discounts]) TotalDiscount
+      ,SUM([subtotal_price]) Subtotal
+  FROM [shop_rest].[dbo].[Orders]  
+  GROUP BY CAST(EOMONTH([order_date],0) AS DATE)
+```
+
+#### Monthly Sales, Discounts & Shipping Revenue
+```tsql
+SELECT 
+     ord.[Month]
+    ,ord.[GrossPrice]
+    ,ord.[TotalDiscount]
+    ,ord.[Subtotal]
+    ,ship.[ShipPrice]
+    ,(ord.[GrossPrice] - ord.[TotalDiscount] + ship.[ShipPrice]) TotalPrice
+FROM (
+    SELECT CAST(EOMONTH([order_date],0) AS date) Month
+          ,SUM([total_line_items_price]) GrossPrice
+          ,SUM([total_discounts]) TotalDiscount
+          ,SUM([subtotal_price]) Subtotal
+          ,SUM([total_tax]) TotalTax
+          ,SUM([total_price]) TotalPrice
+    FROM [shop_rest].[dbo].[Orders]  
+    GROUP BY CAST(EOMONTH([order_date],0) AS DATE)
+) ord 
+INNER JOIN (
+    SELECT SUM([ship_price]) ShipPrice, CAST(EOMONTH([order_date],0) AS date) Month
+    FROM [shop_rest].[dbo].[ShipLines]
+    GROUP BY CAST(EOMONTH([order_date],0) AS date)
+) ship
+ON ord.[Month] = ship.[Month]
+  ORDER BY ord.[Month]
+```

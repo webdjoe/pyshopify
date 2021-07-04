@@ -8,10 +8,7 @@
 ```SQL
 SET QUOTED_IDENTIFIER, ANSI_NULLS ON
 GO
--- =============================================
--- Author:	Joseph Trabulsy
--- Description:	Merge tmp_tbl with Adjustments table
--- =============================================
+
 CREATE OR ALTER PROCEDURE dbo.adjustments_update 
 
 AS
