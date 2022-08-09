@@ -1,6 +1,6 @@
 # ![logo](../Images/table.svg) dbo.DateDimension
 
-[Start](../start.md)>[Tables](./Tables.md)>dbo.DateDimension
+[Start](../start.md)>dbo.DateDimension
 
 ## [](#Description) Description
 

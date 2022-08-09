@@ -1,6 +1,6 @@
 # ![logo](../Images/table.svg) dbo.ShipLines
 
-[Start](../start.md)>[Tables](./Tables.md)>dbo.ShipLines
+[Start](../start.md)>dbo.ShipLines
 
 ## [](#Description) Description
 

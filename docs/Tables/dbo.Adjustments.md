@@ -1,6 +1,6 @@
 # ![logo](../Images/table.svg) dbo.Adjustments
 
-[Start](../start.md)>[Tables](./Tables.md)>dbo.Adjustments
+[Start](../start.md)>dbo.Adjustments
 
 ## [](#Description) Description
 

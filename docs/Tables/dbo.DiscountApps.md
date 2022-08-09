@@ -1,6 +1,6 @@
 # ![logo](../Images/table.svg) dbo.DiscountApps
 
-[Start](../start.md)>[Tables](./Tables.md)>dbo.DiscountApps
+[Start](../start.md)>dbo.DiscountApps
 
 ## [](#Description) Description
 
@@ -8,8 +8,8 @@
 
 ## [](#Columns) Columns _`11`_
 
-|Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
-|---|---|---|---|---|---|---|---
+|Key|Name|Data Type|Length|Precision|Scale|Not Null|Description|
+|---|---|---|---|---|---|---|---|
 | |order_id|bigint|8|19|0|True|Order ID|
 | |order_date|datetime|8|23|3|True|Order Date|
 | |type|nvarchar|255|0|0|False|Type of discount|

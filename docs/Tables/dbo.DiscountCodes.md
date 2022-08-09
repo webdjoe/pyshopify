@@ -1,6 +1,6 @@
 # ![logo](../Images/table.svg) dbo.DiscountCodes
 
-[Start](../start.md)>[Tables](./Tables.md)>dbo.DiscountCodes
+[Start](../start.md)>dbo.DiscountCodes
 
 ## [](#Description) Description
 

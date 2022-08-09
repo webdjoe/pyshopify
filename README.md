@@ -4,7 +4,7 @@ The purpose of this repository is to allow easier Shopify data analysis using an
 
 This repository has two part -
 
-1) Python app - pulls data from shopify orders api into dataframes
+1) Python app - pulls data from shopify orders api into dataframes and export to csv files or sql database with a predefined structure.
 2) Docker container - [Dockerfile](Dockerfile) and [Docker Compose](docker-compose.yml) - fully self-contained database and python application. Easiest method if docker is available- [Run as Docker Container](#docker-container)
 
 This has the flexibility of exporting the data to a SQL Server ( along with other relational dbs), exporting to csv and returning a dictionary of dataframes.

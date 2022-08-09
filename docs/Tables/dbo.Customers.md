@@ -1,6 +1,6 @@
 # ![logo](../Images/table.svg) dbo.Customers
 
-[Start](../start.md)>[Tables](./Tables.md)>dbo.Customers
+[Start](../start.md)>dbo.Customers
 
 ## [](#Description) Description
 

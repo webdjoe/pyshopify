@@ -1,6 +1,6 @@
 # ![logo](../Images/table.svg) dbo.RefundLineItem
 
-[Start](../start.md)>[Tables](../Tables.md)>dbo.RefundLineItem
+[Start](../start.md)>dbo.RefundLineItem
 
 ## [](#Description) Description
 

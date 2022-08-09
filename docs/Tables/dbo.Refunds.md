@@ -1,6 +1,6 @@
 # ![logo](../Images/table.svg) dbo.Refunds
 
-[Start](../start.md)>[Tables](./Tables.md)>dbo.Refunds
+[Start](../start.md)>dbo.Refunds
 
 ## [](#Description) Description
 
