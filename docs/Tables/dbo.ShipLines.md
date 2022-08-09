@@ -1,10 +1,13 @@
-[Start](../start.md)>[Tables](./Tables.md)>dbo.ShipLines
-
 # ![logo](../Images/table.svg) dbo.ShipLines
 
-## <a name="#Description"></a>Description
+[Start](../start.md)>[Tables](./Tables.md)>dbo.ShipLines
+
+## [](#Description) Description
+
 > Order shipping lines
-## <a name="#Columns"></a>Columns _`12`_
+
+## [](#Columns) Columns _`12`_
+
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
 |[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Shipping line id|
@@ -20,12 +23,14 @@
 | |order_id|bigint|8|19|0|False|Order ID|
 | |order_date|datetime|8|23|3|False|Order_date|
 
-## <a name="#Indexes"></a>Indexes _`1`_
+## [](#Indexes) Indexes _`1`_
+
 |Key|Name|Columns|Unique|Type|Description
 |---|---|---|---|---|---
 |[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/Cluster.svg)](#Indexes)|PK_ShipLines|id|True|||
 
-## <a name="#SqlScript"></a>SQL Script
+## [](#SqlScript) SQL Script
+
 ```SQL
 CREATE TABLE dbo.ShipLines (
   id bigint NOT NULL,

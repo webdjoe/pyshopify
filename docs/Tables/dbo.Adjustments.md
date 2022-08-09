@@ -1,10 +1,13 @@
-[Start](../start.md)>[Tables](./Tables.md)>dbo.Adjustments
-
 # ![logo](../Images/table.svg) dbo.Adjustments
 
-## <a name="#Description"></a>Description
+[Start](../start.md)>[Tables](./Tables.md)>dbo.Adjustments
+
+## [](#Description) Description
+
 > Order Refund Adjustments
-## <a name="#Columns"></a>Columns
+
+## [](#Columns) Columns
+
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
 |[![Primary Key PK_adj_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_adj_id](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Adjustment ID|
@@ -15,12 +18,14 @@
 | |kind|nvarchar|255|0|0|False|Kind of Adjustment|
 | |reason|nvarchar|255|0|0|False|Reason for Adjustment|
 
-## <a name="#Indexes"></a>Indexes
+## [](#Indexes) Indexes
+
 |Key|Name|Columns|Unique|Type|Description
 |---|---|---|---|---|---
 |[![Primary Key PK_adj_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_adj_id](../Images/Cluster.svg)](#Indexes)|PK_adj_id|id|True||Adjustment ID PK|
 
-## <a name="#SqlScript"></a>SQL Script
+## [](#SqlScript) SQL Script
+
 ```SQL
 CREATE TABLE dbo.Adjustments (
   id bigint NOT NULL,

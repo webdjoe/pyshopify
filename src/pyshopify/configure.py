@@ -1,78 +1,86 @@
 import configparser
 import pathlib
 import os
-from datetime import datetime
-from dateutil.parser import parse
+from typing import Mapping
 from configparser import SectionProxy
+
+SHOP_ENV_MAP = {
+    "STORE_NAME": "store_name",
+    "SHOPIFY_API_KEY": "access_token",
+    "SHOPIFY_API_VERSION": "version",
+}
+
+SQL_ENV_MAP = {
+    "SHOPIFY_DB_NAME": "database",
+    "SHOPIFY_DB_USER": "db_user",
+    "SHOPIFY_DB_PASSWORD": "db_password",
+    "SHOPIFY_DB_SHCHEMA": "schema",
+    "SHOPIFY_DB_PORT": "port",
+    "SHOPIFY_DB_SERVER": "server",
+    "SHOPIFY_WINDOWS_AUTH": "windows_auth"
+}
 
 
 class Config:
-    def __init__(self, conf='config.ini'):
-        default_conf = {
+    def __init__(self, conf: str = ''):
+        default_conf: Mapping[str, Mapping] = {
             'shopify': {
                 'items_per_page': 250,
-                'days': 30
+                'days': 7,
+                'admin_ep': '/admin/api/',
+                'customers_ep': 'customers.json',
+                'orders_ep': 'orders.json',
+                'version': '2022-07',
+                'time_zone': 'America/New_York',
             },
             'sql': {
-                'enable': False,
+                'windows_auth': False,
+                'db': 'shop_rest',
+                'schema': 'dbo',
+                'server': 'localhost',
+                'port': 1433,
+                'db_user': 'shop_user',
             },
             'csv': {
-                'enable': False,
-                'filepath': 'csv_export'
+                'filepath': 'csv_export',
             },
-            'custom': {
-                'enable': False
-            }
         }
 
-        self.config_file = pathlib.Path.cwd().joinpath(conf)
-        if not os.path.exists(self.config_file):
-            raise OSError(f"Config file not found - {self.config_file}")
+        if conf == '':
+            conf = os.getenv('CONFIG_FILE', 'config.ini')
+        path_obj = pathlib.Path(conf)
+        if path_obj.is_absolute():
+            self.config_file = path_obj
+        else:
+            self.config_file = pathlib.Path.cwd().joinpath(conf)
+
         self.parser = configparser.ConfigParser()
         self.parser.read_dict(default_conf)
-        self.parser.read(str(self.config_file))
+        self.configure_env()
+        if self.config_file.exists():
+            self.parser.read(str(self.config_file))
+
+    def configure_env(self) -> None:
+        """Configure from environment variables."""
+        for k, v in SHOP_ENV_MAP.items():
+            if k in os.environ:
+                self.parser.set('shopify', v, os.environ[k])
+        for k, v in SQL_ENV_MAP.items():
+            if k in os.environ:
+                self.parser.set('sql', v, os.environ[k])
 
     @property
     def shopify(self) -> SectionProxy:
         return self.parser['shopify']
 
     @property
-    def shopify_early(self) -> datetime:
-        return parse(self.shopify.get('early_date'))
+    def time_zone(self) -> str:
+        return self.shopify['timezone']
 
     @property
     def sql_conf(self) -> SectionProxy:
         return self.parser['sql']
 
     @property
-    def sql_enable(self) -> bool:
-        return self.sql_conf.getboolean('enable')
-
-    @sql_enable.setter
-    def sql_enable(self, enable: bool) -> None:
-        """Enable/Disable SQL Output """
-        self.sql_conf['enable'] = str(enable)
-
-    @property
     def csv_conf(self) -> SectionProxy:
         return self.parser['csv']
-
-    @property
-    def csv_enable(self) -> bool:
-        """CSV Export Enabled/Disabled."""
-        return self.csv_conf.getboolean('enable')
-
-    @csv_enable.setter
-    def csv_enable(self, enable: bool) -> None:
-        """Enable/Disable CSV Output """
-        self.csv_conf['enable'] = str(enable)
-
-    @property
-    def custom_enable(self) -> bool:
-        """Custom return Enabled/Disabled - Calling app_runner returns full dataframe"""
-        return self.parser['custom'].getboolean('enable')
-
-    @custom_enable.setter
-    def custom_enable(self, enable: bool) -> None:
-        """Custom return Enabled/Disabled - Calling app_runner returns full dataframe"""
-        self.parser['custom']['enable'] = str(enable)

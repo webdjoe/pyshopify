@@ -1,10 +1,13 @@
-[Start](../start.md)>[Tables](./Tables.md)>dbo.Orders
-
 # ![logo](../Images/table.svg) dbo.Orders
 
-## <a name="#Description"></a>Description
+[Start](../start.md)>[Tables](./Tables.md)>dbo.Orders
+
+## [](#Description) Description
+
 > Order Details
-## <a name="#Columns"></a>Columns _`16`_
+
+## [](#Columns) Columns _`16`_
+
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
 |[![Primary Key PK_OrderID](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_OrderID](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True||||False|False|Order ID|
@@ -26,12 +29,14 @@
 | |email|nvarchar|255|0|0|False| Customer Email|
 | |updated_at|datetime|8|23|3|False|Last order update|
 
-## <a name="#Indexes"></a>Indexes _`1`_
+## [](#Indexes) Indexes _`1`_
+
 |Key|Name|Columns|Unique|Type|Description
 |---|---|---|---|---|---
 |[![Primary Key PK_OrderID](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_OrderID](../Images/Cluster.svg)](#Indexes)|PK_OrderID|id|True||Order ID Unique Key|
 
-## <a name="#SqlScript"></a>SQL Script
+## [](#SqlScript) SQL Script
+
 ```SQL
 CREATE TABLE dbo.Orders (
   id bigint NOT NULL,

@@ -2,194 +2,433 @@
 
 The purpose of this repository is to allow easier Shopify data analysis using any SQL or and BI tools that support sql. Shopify's rest API is not data analysis friendly, returning one large, denormalized dataset. This library yields a more normalized dataset that can be used to populate a database or perform a direct analysis.
 
-This repository has two part - 
+This repository has two part -
+
 1) Python app - pulls data from shopify orders api into dataframes
-2) [Docker container](docker/) - fully self contained database and app
+2) Docker container - [Dockerfile](Dockerfile) and [Docker Compose](docker-compose.yml) - fully self-contained database and application
 
 This has the flexibility of exporting the data to a SQL Server ( along with other relational dbs), exporting to csv and returning a dictionary of dataframes.
 
-The Structure of the SQL Database is described in depth in the [Docs](docs/) folder, an SQL script to build the database is in the scripts folder [setup.sql](docker/scripts/setup.sql).
-
-A fully contained docker container with `docker-compose.yml` is included for simple deployment. Container contains Microsoft SQL Server 2019 with this library installed for easily running with a small amount of configuration.
+The Structure of the SQL Database is described in depth in the [Docs](docs) folder, an SQL script to build the database is in the scripts folder [setup.sql](scripts/setup.sql).
 
 ## Table of Contents
 
-1. [Configuration](#script-configuration-file)
-2. [Base Installation](#installing-base-library)
-3. [Installation with SQL Drivers](#library-with-sql-driver)
-4. [Running the Application as a Module](#running-the-shopifyapp)
-5. [Running as Command Line Applicaiton](#running-as-command-line-application)
-6. [Database Structure](#database-structure)
-    * [Tables](#tablesdocstablestablesmd)
-    * [Stored Procedures](#stored-proceduresdocsproceduresproceduresmd)
-    * [Full Documentation](docs/start.md)
-7. [Database Script](#database-script)
-8. [Docker Container](#docker-container)
-9. [Useful Queries](#useful-queries)
+- [Shopify Orders Rest API Wrapper and Data Export](#shopify-orders-rest-api-wrapper-and-data-export)
+  - [Table of Contents](#table-of-contents)
+  - [Data Returned](#data-returned)
+    - [Orders Data](#orders-data)
+    - [Customers Data](#customers-data)
+  - [Configuration](#configuration)
+    - [Default Configuration](#default-configuration)
+    - [Environment Variables](#environment-variables)
+    - [Example `config.ini` Configuration](#example-configini-configuration)
+    - [Configuration Dictionary](#configuration-dictionary)
+  - [Installation](#installation)
+    - [Base Library](#base-library)
+    - [Library with SQL Driver](#library-with-sql-driver)
+    - [Installing ODBC Driver](#installing-odbc-driver)
+    - [Installing Python SQL Dependencies](#installing-python-sql-dependencies)
+  - [Running in a Python Script](#running-in-a-python-script)
+    - [Instantiating Class](#instantiating-class)
+    - [Updating Configuration](#updating-configuration)
+      - [Full Configuration Dictionary](#full-configuration-dictionary)
+      - [Shopify Configuration Dictionary](#shopify-configuration-dictionary)
+    - [Returning Full Dataset in a Dictionary of DataFrames](#returning-full-dataset-in-a-dictionary-of-dataframes)
+    - [Iterating through Data](#iterating-through-data)
+    - [Writing to CSV and SQL Server](#writing-to-csv-and-sql-server)
+      - [Writing data to desired output](#writing-data-to-desired-output)
+  - [Running as Command Line Application](#running-as-command-line-application)
+  - [Data Structure](#data-structure)
+  - [Database Structure](#database-structure)
+    - [Database Working Tables](#database-working-tables)
+  - [Database script](#database-script)
+  - [Docker Container](#docker-container)
+    - [Docker Compose](#docker-compose)
+    - [Creating a Container](#creating-a-container)
+    - [Running pyshopify in the container](#running-pyshopify-in-the-container)
+    - [Setting up a cron job](#setting-up-a-cron-job)
 
+## Data Returned
 
+The following is a brief summary of the data being returned. The keys of the return dictionary match the table names of the database structure. The DataFrame columns match the columns of each table. For a detailed view of the structure of each DataFrame, see the database documentation.
 
-## Script Configuration file
-The python script is configured through an ini based file. Here is the template:
+### Orders Data
+
+| Key/Table                                           | Description                                                                               |
+|-----------------------------------------------------|-------------------------------------------------------------------------------------------|
+| [Orders](docs/Tables/dbo.Orders.md)                 | Order ID's, date, pricing details, fulfilment status, financial status                    |
+| [OrderAttr](docs/Tables/dbo.OrderAttr.md)           | Attribution details of each order - landing page, source url, referral url, campaign      |
+| [LineItems](docs/Tables/dbo.LineItems.md)           | Order line items with order ID, date, quantity, product/variant ID's, sku, title, pricing |
+| [Adjustments](docs/Tables/dbo.Adjustments.md)       | Order Refund Adjustments                                                                  |
+| [DiscountApps](docs/Tables/dbo.DiscountApps.md)     | Discount Applications for Each Order                                                      |
+| [DiscountCodes](docs/Tables/dbo.DiscountCodes.md)   | Discount Codes In Use for Each Order                                                      |
+| [RefundLineItem](docs/Tables/dbo.RefundLineItem.md) | Refunded Units                                                                            |
+| [Refunds](docs/Tables/dbo.Refunds.md)               | Order Refunds                                                                             |
+| [ShipLines](docs/Tables/dbo.ShipLines.md)           | Order ID, shipping pricing, carrier, code, source, title                                  |
+
+### Customers Data
+
+| Key/Table                                           | Description                                                        |
+|-----------------------------------------------------|--------------------------------------------------------------------|
+| [Customers](docs/Tables/dbo.Customers.md)           | Customer purchase totals, numbers of orders, last order, geography |
+
+## Configuration
+
+The application can be configured three ways, starting with the lowest priority:
+
+1. Default configuration - loaded automatically
+2. Reading Environment Variables. When using the included docker container, these environment variables are automatically set from docker compose.
+3. File named `config.ini` in current working directory or with relative or absolute file path passed in as an argument `app = pyshopify.ShopifyApp(config_dir='/home/user/app/config.ini')`.
+4. Configuration dictionary with 'shopify', 'sql' and/or 'csv' keys as the ini file is structured.
+
+### Default Configuration
+
+This is the default configuration automatically passed to `ShopifyApp` instance.
+
+```python
+default_configuration = {
+    'shopify': {
+        'items_per_page': 250,
+        'days': 7,
+        'admin_ep': '/admin/api/',
+        'customers_ep': 'customers.json',
+        'orders_ep': 'orders.json',
+        'version': '2022-07',
+        'time_zone': 'America/New_York',
+    },
+    'sql': {
+        'windows_auth': False,
+        'db': 'shop_rest',
+        'schema': 'dbo',
+        'server': 'localhost',
+        'port': 1433,
+        'user': 'shop_user',
+    },
+    'csv': {
+        'filepath': 'csv_export',
+    },
+}
+```
+
+### Environment Variables
+
+```bash
+# Shopify Environment Variables
+$ export SHOPIFY_ACCESS_TOKEN=<your access token>
+$ export SHOPIFY_STORE_NAME=<your store name>
+$ export SHOPIFY_API_VERSION=<Shopify api version> # ex. 2022-07
+# SQL Server Environment Variables
+$ export SHOPIFY_DB_USER=<your shopify db user>
+$ export SHOPIFY_DB_PASSWORD=<your shopify db password>
+$ export SHOPIFY_DB_NAME=<your shopify db name>
+$ export SHOPIFY_DB_SERVER=<your db server>
+$ export SHOPIFY_DB_SCHEMA=<your schema name>
+```
+
+### Example `config.ini` Configuration
+
+The python script is configured through an ini based file using `configparser`. This is a template with all possible options:
+
 ```ini
 [shopify]
-# Orders API Endpoint
-url_base = https://**YOURSTORE**.myshopify.com
-order_ep = /admin/api/2020-10/orders.json
+# Optional Configuration
+orders_ep = orders.json
+customers_ep = customers.json
+api_version = 2022-07
+api_path = /admin/api/
+items_per_page = 250
 
+# Required Configuration
+store_name = ***STORE-NAME-IN-ADMIN-URL***
 # Shopify Access Token
 access_token = ***ACCESS TOKEN FROM ADMIN***
 
-# Earliest date
-early_date = 20000101
-
-# Items per Return - 250 Max
-items_per_page = 250
-
 # Uncomment to get data between two dates
-# Overrides past days of history
+# Overrides past days of history - Can be in 'YYYYMMDD' or 'MM-DD-YYYY' format
 # start = 20210610
 # end = 20210617
 
-# Get past days of history - 30 days is default
+# Get past days of history - 7 days is default
 days = 30
 
 [sql]
-enable = False
-
 # Driver for pyodbc to use
-driver = ODBC Driver 17 for SQL Server
+driver = ODBC Driver 18 for SQL Server
 
 # Database server & port
 server = ***DATABASE SERVER***
 port = 1433
 database = ***DATABASE***
-
+schema = dbo
 # Database user & password
 db_user = ***DB USER***
 db_pass = ***DB PASSWORD***
 
+windows_auth = False
+
 [csv]
-enable = True
 # Relative filepath of csv folder output
 filepath = csv_export
-
-[custom]
-#Output dictionary of dataframes
-enable = False
 ```
 
-The configuration file will default to `config.ini` in the current working directory. A custom path can be defined by passing to `ShopifyApp('rel/path/config.ini')` when instantiating or the `shopify_cli --config rel/path/config.ini`
+### Configuration Dictionary
 
-## Installing Base Library
+```python
+from pyshopify.runner import ShopifyApp
+configuration = {
+    "shopify": {
+        "access_token": "<your api key>",
+        "store_name": "<your store name>",
+        "api_version": "2022-07",
+        "days": 7,
+    },
+    "sql": {
+        "db": "shop_rest",
+        "server": "localhost",
+        "port": 1433,
+        "db_user": "shop_user",
+        "db_pass": "StrongerPassword1!",
+        "schema": "dbo",
+    },
+    "csv": {
+        "filepath": "csv_export",
+    }
+}
 
-Install from PyPi through `pip install`. This will install all required dependencies for running to export to CSV and return a dictionary of dataframes. 
+app = ShopifyApp(config_dict=configuration)
+
+```
+
+___
+
+## Installation
+
+### Base Library
+
+Install from PyPi through `pip install`. This will install all required dependencies for running to export to CSV and return a dictionary of dataframes.
+
 ```shell script
-$ python3 -m pip install pyshopify
+python3 -m pip install pyshopify
 ```
-## Library with SQL Driver
-In order to use the sql output feature, the database driver and python library must be installed. 
 
-On linux it takes several steps. pyodbc must be installed as root user.
+### Library with SQL Driver
+
+In order to use the sql output feature, the Microsoft ODBC driver, ODBC headers and SQL python packages need to be installed. \
+
+### Installing ODBC Driver
+
+On linux, msodbc18 needs to be installed first, then unixodbc headers. This is an example on Ubuntu (only compatible with 18.04, 20.04 & 21.04):
+
 ```shell script
-$ apt-get install -y unixodbc-dev msodbcsql17
-$ sudo -H python3 -m pip install pyodbc
-$ python3 -m pip install sqlalchemy 
+$ sudo su
+# Install curl and gnupg2 if needed
+$ apt update && apt install curl gnupg2 lsb_release
+# Add Microsoft's Repository
+$ curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+$ curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list
+# Install ODBC Driver and unixodbc-dev headers
+$ apt update && apt install -y msodbcsql18 unixodbc-dev
 ```
-Ensure MS ODBC driver is installed on Windows. Can be found [Microsoft SQL OBC Driver](https://docs.microsoft.com/en-us/sql/connect/odbc/windows/system-requirements-installation-and-driver-files?view=sql-server-ver15#installing-microsoft-odbc-driver-for-sql-server) 
 
+The Windows ODBC driver can be found here [Microsoft SQL OBC Driver](https://docs.microsoft.com/en-us/sql/connect/odbc/windows/system-requirements-installation-and-driver-files?view=sql-server-ver15#installing-microsoft-odbc-driver-for-sql-server)
 
-## Running the ShopifyApp()
+### Installing Python SQL Dependencies
 
-The primary class is `ShopifyApp()` which contains all of the necessary execution methods. 
+On Ubuntu or WSL:
+
+```shell script
+# Install python & venv if needed
+$ apt install python3.9 python3.9-dev python3-pip python3-venv git
+$ exit # exit sudo
+$ cd ~
+$ python3.9 -m venv ~/venv 
+$ git clone https://github.com/webdjoe/pyshopify.git
+$ source ~/venv/bin/activate && pip install -r ./pyshopify/requirements.txt
+```
+
+___
+
+## Running in a Python Script
+
+The primary class is `ShopifyApp()` which contains the necessary execution methods.
 
 Can be run two ways:
 
-As a module, instantiating `ShopifyApp` and running `app_runner()`. If custom is disabled, it will return None. If custom is enabled, a dictionary of dataframes of the entire api call is returned. 
+### Instantiating Class
+
+Instantiating `ShopifyApp()` from the `pyshopify.runner` module. To get a dictionary of dataframes:
+
 ```python
 from pyshopify.runner import ShopifyApp
 
-# If no value is passed, the program will try to use a file in the working directory named config.ini
-shop_instance = ShopifyApp('rel/dir/to/config.ini')
+# Instantiate ShopifyApp() with a configuration dictionary or absolute or relative location of config.ini file
+shop_instance = ShopifyApp(config_dir='rel/dir/to/config.ini')
 
-run = shop_instance.app_runner()
+# Use configuration dictionary above to instantiate ShopifyApp()
+shop_instance = ShopifyApp(config_dict=configuration)
 ```
 
-By enabling custom in the configuration, the entire API call is combined into a single dictionary. This can be a large amount of data, and want to apply logic in between each call.
-In this case, use the app_iterator() method
+### Updating Configuration
+
+The configuration can be updated at any point with the `update_config()` method. This can update the dates or time period of the export.
+
+#### Full Configuration Dictionary
+
+A full configuration dictionary can be passed to `update_config()` and all methods that output to csv or sql server. A full configuration dictionary can hav sql, csv & shopify keys.
 
 ```python
-api_iterator = shop_instance.app_iterator()
-for api_return in api_iterator:
-    #Perform logic here, return dictionary is in same structure as the full dictionary from app_runner()
-    print(api_iterator.get('Refunds'))
-```
-
-The configuration can be set after you've instantiated the class:
-```python
-shop_instance = ShopifyApp()
-shop_instance.csv_enable = True # enables csv output
-shop_instance.custom_enable = True # Enabled full output
-```
-Enabling SQL output is possible but slightly more involved.
-```python
-shop_instance = ShopifyApp()
-shop_instance.sql_conf = {
-    'enabled': True,
-    'driver': 'ODBC Driver 17 for SQL Server',
-    'server': 'localhost',
-    'database': 'shop_rest',
-    'db_user': 'sa',
-    'db_password': 'StrongDBPassword'
+app = ShopifyApp()
+updated_config = {
+    "shopify": {
+        "start": "20220110",
+        "end": "20220217",
+    },
+    "sql": {
+        "db": "shop_rest"
+    }
 }
-shop_app.sql_alive = shop_app.sql_connect()
+app.update_config(updated_config)
+
+# Methods that write to csv or sql, accept the full configuration dictionary
+full_config = {
+    "shopify": {
+        "days": 30
+    },
+    "sql": {
+        "server": "localhost"
+    }
+}
+app.write_sql(config=full_config)
 ```
-shop_app.sql_alive should return true if connected to database. An error will be raised if unable to connect
 
+#### Shopify Configuration Dictionary
 
-The return value of `app_runner()` and `app_iterator()` is a dictionary of dataframes in the structure below. This structure mirrors the structure of the database output.  
+Methods that return or yield data, such as `orders/customers_full_df()`, `orders/customers_iterator()` and `get_full_df()` accept a shopify configuration dictionary.
+
+```python
+# Methods that return or yield datasets accept only the shopify configuration section
+shopify_config = {
+    "days": 30
+}
+app.return_full_df(shopify_config=shopify_config)
+
+```
+
+### Returning Full Dataset in a Dictionary of DataFrames
+
+A full dataset can be returned with the entire date range in one dictionary of dataframes. This should only be used with smaller date ranges to avoid memory issues.
+
+The shopify configuration can optionally be passed to these methods as a single dictionary with just the Shopify configuration.
 
 ```python
 from pyshopify.runner import ShopifyApp
-shop_class = ShopifyApp()
-run = ShopifyApp.app_runner()
+app = ShopifyApp()
 
-# Order Details
-# ['id' 'order_date' 'fulfillment_status' 'name' 'number' 'order_number', 'payment_gateway_names' 'processing_method' 'source_name', 'subtotal_price' 'total_discounts' 'total_line_items_price' 'total_price', 'total_price_usd' 'total_tax' 'total_weight', 'email', 'updated_at']
-orders_dataframe = run.get("Orders")
+shopify_config = {
+    "access_token": "<your api key>",
+    "store_name": "<your store name>",
+    "api_version": "2022-07",
+    "days": 7
+}
 
-# Refunds Dataframe with Date of Refund and Order ID
-# Columns    ['refund_date', 'order_id']
-refunds_dataframe = run.get("Refunds")
+# Return full orders dataset
+orders = app.orders_full_df(shopify_config=shopify_config)
+orders.items()
+# Returns:
+#   [('Orders', <pandas.DataFrame>),
+#       ('Refunds', <pandas.DataFrame>),
+#       ('LineItems', <pandas.DataFrame>),
+#       ('RefundLineItem', <pandas.DataFrame>),
+#       ('Adjustments', <pandas.DataFrame>),
+#       ('DiscountApps', <pandas.DataFrame>),
+#       ('DiscountCodes', <pandas.DataFrame>),
+#       ('ShipLines', <pandas.DataFrame>),
+#       ('OrderAttr', <pandas.DataFrame>)]
 
-# Refund Line Items Showing Units returned
-# ['id', 'line_item_id', 'quantity', 'subtotal', 'total_tax', 'variant_id', 'refund_id', 'order_id']
-refund_lineitems = run.get("RefundLineItems")
+# Return full customers dataset
+customers = app.customers_full_df()
+customers.items()
+# Returns:
+#   [('Customers', <pandas.DataFrame>)]
 
-# Line Items sold
-# ['id', 'order_id', 'order_date', 'variant_id', 'quantity', 'price']
-line_items = run.get("LineItems")
+# Return full orders and customers dataset
+all_data = app.get_full_df(shopify_config=shopify_config)
+all_data.items()
+# Returns:
+#   [('Orders', <pandas.DataFrame>),
+#       ('Refunds', <pandas.DataFrame>),
+#       ('LineItems', <pandas.DataFrame>),
+#       ('RefundLineItem', <pandas.DataFrame>),
+#       ('Adjustments', <pandas.DataFrame>),
+#       ('DiscountApps', <pandas.DataFrame>),
+#       ('DiscountCodes', <pandas.DataFrame>),
+#       ('ShipLines', <pandas.DataFrame>),
+#       ('OrderAttr', <pandas.DataFrame>),
+#       ('Customers', <pandas.DataFrame>)]
+```
 
-# Customer info for each order
-# ['order_id', 'order_date', 'email', 'customer_id', 'orders_count', 'total_spent', 'created_at']
-customer_orders = run.get("OrderCustomers")
+### Iterating through Data
 
-# Order Shipping Prices
-# [id, order_id, order_date, carrier_identifier, code, delivery_category, ship_discount_price, ship_price, phone, requested_fulfillment_id, source, title]
-shipping_lines = run.get("ShipLines")
+For larger datasets, it is recommended to use the generator methods to iterate through the paginated data. The return has in the same structure as the `get_full_df()` methods.
 
-# Discount Applications
-# ['order_id', 'order_date', 'type', 'code', 'title', 'description', 'value', 'value_type', 'allocation_method', 'target_selection', 'target_type']
-discount_applications = run.get("DiscountApps")
+A [shopify configuration dictionary](#shopify-configuration-dictionary) can be passed to these methods.
 
-# Discount Codes
-# ['order_id', 'code', 'type', 'amount']
-discount_codes = run.get('DiscountCodes')
- 
+```python
+from pyshopify.runner import ShopifyApp
+app = ShopifyApp()
+
+# A shopify configuration dictionary can be passed to all the generator methods
+orders = app.orders_iterator(shopify_config=shopify_config)
+
+# Iterate through orders data
+orders = app.orders_iterator()
+
+for order_dict in orders:
+    order_dict.items()
+
+# Iterate through customers data
+customers = app.customers_iterator()
+
+for customers_dict in customers:
+    customers_dict.items()
+```
+
+### Writing to CSV and SQL Server
+
+There are several convenience methods that can be used to write the orders and customers data to CSV and SQL Server. The sql configuration can be passed directly to these methods, as the `engine` is only created during the first SQL method and stored as an instance variable `app.engine`
+
+#### Writing data to desired output
+
+```python
+from pyshopify.runner import ShopifyApp
+
+# No arguments defaults to attempt to read to a config.ini file in CWD
+app = ShopifyApp()
+
+# Main method that can write any combination of orders/customers data to csv/sql and set configuration
+app.data_writer(customers=True, orders=True,
+    write_sql=True, write_csv=True, config=full_config)
+
+### There are several convenience methods for easier calls:
+
+# Write only orders data to CSV and/or SQL
+app.orders_writer(write_sql=True, write_csv=True, config=full_config)
+
+# Write only customers data to CsV and/or SQL
+app.customers_writer(write_sql=True, write_csv=True, config=full_config)
+
+# Write customers and orders data to SQL
+app.sql_writer(config=full_config)
+
+# Write customers and orders data to CSV
+app.csv_writer(config=full_config)
+
 ```
 
 ## Running as Command Line Application
+
 From command line:
+
 ```shell script
 # There are different command options
 $ shopify_cli --help
@@ -217,229 +456,172 @@ $ shopify_cli -b 2020-01-01 2020-01-02 # get orders between dates and export csv
 $ shopify_cli -d 30 --sql-out # update SQL db
 ```
 
-Enabling the custom section of `config.ini` will return a dictionary of order data parsed into separate key-value pairs that allow easier processing and analysis. Using the sql option will update an SQL Database with the data from the dictionary.
+## Data Structure
 
-The structure of the custom return dictionary reflects the SQL database structure that it will update:
+The structure of the custom return dictionary reflects the SQL database structure that it will update. See the [database docs](docs/tables.md) for full details on each table/DataFrame.
+
 ```python
 from pyshopify import ShopifyApp
 
 # Enable custom in config.ini
 shop_app = ShopifyApp()
 
-app_run = shop_app.app_runner()
+orders_dict = shop_app.orders_full_df()
 
-app_run = {
-      'Orders': OrdersDataframe,
-      'Customers': CustomersDataframe,
-      'LineItems': LineItemDataFrame
-      'Refunds': RefundDataFrame,
-      'RefundLineItem': RefLineItem.DataFrame,
-      'Adjustments': RefundAdjustmentsDataFrame
+orders_dict = {
+    'Orders': DataFrame,
+    'Refunds': DataFrame,
+    'LineItems': DataFrame,
+    'RefundLineItem': DataFrame,
+    'Adjustments': DataFrame,
+    'DiscountApps': DataFrame,
+    'DiscountCodes': DataFrame,
+    'ShipLines': DataFrame,
+    'OrderAttr': DataFrame
 }
-```
 
-Each dataframe in the return represents an SQL Table in the database. The dataframe column types match the database column types.
+customers_dict = shop_app.customers_full_df()
+
+customers_dict = {
+    "Customers": DataFrame
+}
+
+```
 
 ## Database Structure
 
-Exporting SQL from API response is two step process:
-1. Send DataFrame to temporary SQL Table
-2. Run stored procedure to merge temp table with the appropriate table 
+Exporting SQL from API response is two-step process:
 
-The full database documentation is located [here](docs/Start.md)
+1. Send DataFrame to temporary SQL Table
+2. Run merge statement to update database tables
+
+The full database documentation is located [here](docs/tables.md)
 
 Click on each item for more details.
 
-#### `shop_rest` is the default database name. Remember to change config.ini if using a different database name. 
+**`shop_rest`** is the default database name.
 
-### [Tables](docs/Tables/Tables.md)    
+### [Database Working Tables](docs/tables.md)
 
-|Name|Description
-|---|---
-|[dbo.Adjustments](docs/Tables/dbo.Adjustments.md)|Order Refund Adjustments|
-|[dbo.DateDimension](docs/Tables/dbo.DateDimension.md)|Date Dimension Table for Analysis|
-|[dbo.DiscountApps](docs/Tables/dbo.DiscountApps.md)|Discount Applications for Each Order|
-|[dbo.DiscountCodes](docs/Tables/dbo.DiscountCodes.md)|Discount Codes In Use for Each Order|
-|[dbo.LineItems](docs/Tables/dbo.LineItems.md)|Line Items with Units Sold for Orders|
-|[dbo.OrderCustomers](docs/Tables/dbo.OrderCustomers.md)|Customer Info based on Order ID|
-|[dbo.Orders](docs/Tables/dbo.Orders.md)|Order Details|
-|[dbo.RefundLineItem](docs/Tables/dbo.RefundLineItem.md)|Refunded Units|
-|[dbo.Refunds](docs/Tables/dbo.Refunds.md)|Order Refunds |
-|[dbo.ShipLines](docs/Tables/dbo.ShipLines.md)|Order shipping lines |
-
-###  [Stored Procedures](docs/Procedures/Procedures.md)
-
-|Name|Description
-|---|---
-|[dbo.adjustments_update](docs/Procedures/dbo.adjustments_update.md)|Update Adjustments|
-|[dbo.cust_update](docs/Procedures/dbo.cust_update.md)|Update Customer Orders Table|
-|[dbo.discapp_update](docs/Procedures/dbo.discapp_update.md)| Update discounts applied to each order|
-|[dbo.disccode_update](docs/Procedures/dbo.disccode_update.md)| Update discount codes used for each order|
-|[dbo.lineitems_update](docs/Procedures/dbo.lineitems_update.md)|Update Line Items|
-|[dbo.orders_update](docs/Procedures/dbo.orders_update.md)|Merge Orders|
-|[dbo.reflineitem_update](docs/Procedures/dbo.reflineitem_update.md)|Merge Refunded Line Items|
-|[dbo.refunds_update](docs/Procedures/dbo.refunds_update.md)|Merge Refunds
-|[dbo.shipline_update](docs/Procedures/dbo.shipline_update.md)|Update shipping lines table
-
+| Key/Table                                           | Description                                                                               |
+|-----------------------------------------------------|-------------------------------------------------------------------------------------------|
+| [Orders](docs/Tables/dbo.Orders.md)                 | Order ID's, date, pricing details, fulfilment status, financial status                    |
+| [OrderAttr](docs/Tables/dbo.OrderAttr.md)           | Attribution details of each order - landing page, source url, referral url, campaign      |
+| [LineItems](docs/Tables/dbo.LineItems.md)           | Order line items with order ID, date, quantity, product/variant ID's, sku, title, pricing |
+| [Adjustments](docs/Tables/dbo.Adjustments.md)       | Order Refund Adjustments                                                                  |
+| [DiscountApps](docs/Tables/dbo.DiscountApps.md)     | Discount Applications for Each Order                                                      |
+| [DiscountCodes](docs/Tables/dbo.DiscountCodes.md)   | Discount Codes In Use for Each Order                                                      |
+| [RefundLineItem](docs/Tables/dbo.RefundLineItem.md) | Refunded Units                                                                            |
+| [Refunds](docs/Tables/dbo.Refunds.md)               | Order Refunds                                                                             |
+| [ShipLines](docs/Tables/dbo.ShipLines.md)           | Order ID, shipping pricing, carrier, code, source, title                                  |
+| [Customers](docs/Tables/dbo.Customers.md)           | Customer purchase totals, numbers of orders, last order, geography                        |
 
 A [DateDimension](docs/Tables/dbo.DateDimension.md) table is included for easier analysis
 
 ## Database script
 
-To build the dataabse, run the [setup.sql](docker/scripts/setup.sql) script in the `docker/scripts` folder. This has only been tested on Microsoft SQL Server 2019 but can easily be adapted for other databases. It will set up all of the required tables and stored procedures.
+To build the dataabse, run the [shopify.sql](scripts/shopify.sql) script in the `scripts` folder. The script should be run through `SQLCMD` with the following variables set. The database is built automatically with a new user that only has access to that database.
 
-The `DateDimension` table can be created from the [dates.sql](docker/scripts/dates.sql) script in the [docker/scripts](docker/scripts) fold. Credit goes to Aaron Bertrand for this amazing script - [Creating a date dimension or calendar table in SQL Server](https://www.mssqltips.com/sqlservertip/4054/creating-a-date-dimension-or-calendar-table-in-sql-server/)
+- **DBName** - Name of database to create for data, default `shop_rest`
+- **DBUser** - Login & user to create for the shopify database, default `shop_user`
+- **DBPassword** - Database user password, default `Strongerpassword1!`
+- **DBSchema** - DB Schema - default `dbo`
+- **StartDate** - Starting date of DateDimension table - must be in YYYYMMDD format, default `20190101`
 
-Both are ran automatically when starting the docker container.
+```shell
+/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "SA_User_Password" -d master \
+-v StartDate="20190101" -v DBName="shop_rest" \
+-v SchemaName="dbo" -v DBUser="shop_user" \
+-v DBPassword="Strongerpassword1!" \
+-i /usr/scripts/shopify.sql
+```
 
 ## Docker Container
 
-There is a Dockerfile and docker-compose.yml in the [docker](docker) folder. This is based on the Microsoft SQL Server 2019 container running on Ubuntu. It installs all of the necessary applications to run pyshopify and a database instance to write to. 
+The `Dockerfile` and `docker-compose.yml` files are based on the Microsoft SQL Server 2019 container running on Ubuntu 20.04. It hosts the database with the structure prebuilt and can run pyshopify from the commandline.
 
-NOTE: This is NOT production ready. Security is not hardened, container is run as root user.
+Both containers automatically deploy [shopify.sql](scripts/shopify.sql) to build the required database structure and create a user with access to that database.
 
-Both containers automatically deploy [setup.sql](docker/scripts/setup.sql) and [dates.sql](docker/scripts/dates.sql) to build the required database structure.
+Set environment variables and SA password to configure the database in `docker-compose.yml`. Configure a volume for CSV export if needed
 
-Please make sure to set the password in the `docker-compose.yml` file.
+The `config.ini` should be mapped to the `/root` user directory inside the container. A csv folder can also be mapped to a local folder. This should match the relative csv filepath in the configuration file. The working directory is the root user's home directory.
 
-Download entire docker folder or just clone repo  
+### Docker Compose
+
+The docker compose file configures the db administrator and the shopify database user. The date dimension table is built based on the `STARTING_DATE` environment variable.
+
+The default location of the `config.ini` file is in the root user dir, the container's working directory. The data directory volume is the db data folder and the csv_export folder can also be mapped to a local directory.
+
+```yaml
+version: "3.9"
+
+services:
+    sqlserver:
+        build: .
+        container_name: shop_sql
+        hostname: shop_sql
+        ports:
+            - "1433:1433"
+        environment:
+            ACCEPT_EULA: "Y"
+            SA_PASSWORD: "TheStrongestpassword1!"
+            MSSQL_SA_PASSWORD: "TheStrongestpassword1!"
+            SHOPIFY_DB_USER: "shop_user"
+            SHOPIFY_DB_PASSWORD: "Strongerpassword1!"
+            SHOPIFY_DB_NAME: "shop_rest"
+            SHOPIFY_DB_SCHEMA: "dbo"
+            STARTING_DATE: "2019-01-01"
+            CONFIG_FILE: "/root/config.ini"
+        volumes:
+            - "./csv_export:/root/csv_export"
+            - "./data:/var/opt/mssql"
+            - "./config.ini:/root/config.ini"
+
+```
+
+### Creating a Container
+
+To create a container:
 
 ```shell script
-$ git clone https://github.com/webdjoe/pyshopify
-$ cd docker
+git clone https://github.com/webdjoe/pyshopify
+# edit the docker compose env var with vim or nano
+vim docker-compose.yml
+
+# edit config.ini file
+vim config.ini
+
+# Build and run container
+sudo docker compose build
+sudo docker compose up
 ```
-Use vim or nano to edit docker-compose.yml and config.ini in config folder
+
+Once started test if SQL server is running. A `0` return value indicates the server has started up and is ready for connections. The shopify.sql script should have already run to build the necessary database.
+
 ```shell script
-$ vim docker-compose.yml
-$ vim config/config.ini
+ sudo docker exec -it shop_sql bash -c '/opt/mssql-tools/bin/sqlcmd -h -1 -t 1 -U sa\
+ -P "$MSSQL_SA_PASSWORD" -Q "SET NOCOUNT ON; Select SUM(state) from sys.databases"'
 ```
 
-Build & Run container. Use -d for detached
+### Running pyshopify in the container
+
+`shopify_cli` can be called in container to pull data and send to database or csv files.
+
 ```shell script
-$ docker-compose build
-$ docker-compose run -d
-```
-Once started test if SQL server is running. A `0` return value indicates the server has started up.
-```shell script
-$ docker exec -it shopsql /opt/mssql-tools/bin/sqlcmd -h -1 -t 1 -U sa -P "$SA_PASSWORD" -Q "SET NOCOUNT ON; Select SUM(state) from sys.databases")
-```
-`shopify_cli` can be called in container to update the container's database.
-```shell script
-Get last 30 days of data and import into SQL Server running in container
-$ docker exec -it shopsql shopify_cli -d 30 --no-csv --sql-out
+# Get last 30 days of data and import into SQL Server running in container
+sudo docker exec -it shop_sql shopify_cli -d 30 --sql-out
 
-Get data between dates and import into SQL Server running on container 
-$ docker exec -it shopsql shopify_cli -b 20200101 20201231 --no-csv --sql-out
+# Get data between dates and import into SQL Server
+sudo docker exec -it shop_sql shopify_cli -b 2020-01-01 2020-12-31 --sql-out
+
+# Pull 30 days of data into csv files
+sudo docker exec -it shop_sql shopify_cli --csv-out --csv-location csv_export
 ```
 
-`shopify_cli` can also be run from container to get data in csv files in the csv_export folder
-Assumes run from the same folder as the docker files. Container links csv_export folder to retreive export without having to copy from container.
-```shell script
-$ docker exec -it shopsql shopify_cli --csv-out
-$ cd csv_export
-```
- 
- ## Useful Queries
- 
- These scripts assume Shopify has been configured correctly from the start, meaning SKU's, product names and product titles remained consistent. If not, so data cleansing may be required. For example, if your product title has been properly configured you can update SKU's from the `variant_sku` column.
- 
-#### List all product names, titles, skus and variant SKU's to check for consistency.
- 
-Resulting table is ordered by quantity sold to check impact of product sku & naming consistency  
- 
- ```tsql
-SELECT [variant_id], [name], [product_id], [sku], [title], SUM([quantity]) quantity
-FROM shop_rest.dbo.LineItems
-GROUP BY [variant_id], [name], [product_id], [sku], [title]
-ORDER BY SUM([quantity])
-``` 
-Or check if above a minimum threshold, 10 in this case:
+### Setting up a cron job
 
-```tsql
-SELECT [variant_id], [name], [product_id], [sku], [title], SUM([quantity]) quantity
-FROM shop_rest.dbo.LineItems
-GROUP BY [variant_id], [name], [product_id], [sku], [title]
-HAVING SUM([quantity]) > 10
-ORDER BY SUM([quantity])
-```
+A script is included to automatically set up a cron job to run `shopify_cli` to pull the last 5 days of data, every day at 4AM.
 
-If there are inconsistencies, an easy way to clear up is to import the return table into excel and make a table of variant_id with the correct title and SKU. Import that table into SQL server and join with queries that return `variant_id`.
-
-#### Quantities Sold
-
-Return quantities sold, grouped by month. SKU and title are used as identifiers as identifiers.
-
-```tsql
-SELECT EOMONTH([order_date],0) OrderDate, [sku], [name], SUM([quantity]) Quantity
-FROM shop_rest.dbo.LineItems
-GROUP BY EOMONTH([order_date], 0), [sku], [name]
-ORDER BY [order_date]
-```
-
-If there is inconsistency in product naming and SKU's, use a subquery to join table with the table created containing the variant_id with the corrected SKU's and product titles. The following logic can be applied to any other query containing `variant_id`
-
-```tsql
-SELECT te.OrderDate, te.sku, SUM(te.qty) Quantity FROM
-
-(
-    SELECT CAST(EOMONTH([order_date],0) as date) OrderDate
-        ,vs.[sku]
-        ,vs.[name]
-        ,[sku]
-        ,li.[quantity] qty
-    FROM shop_rest.dbo.LineItems li
-    INNER JOIN shop_rest.dbo.VariantSkus vs 
-        ON li.variant_id = vs.variant_id
-) te
-
-GROUP BY te.OrderDate, te.sku
-ORDER BY te.OrderDate
-``` 
-
-#### Number of returning customers per month
-
-```tsql
-SELECT COUNT(*) AS Customers, CAST(EOMONTH(order_date,0) AS date) AS OrderDate
-    FROM dbo.OrderCustomers
-WHERE [orders_count] > 1
-GROUP BY CAST(EOMONTH(order_date) AS date)
-```
-
-#### Monthly Gross Sales with Discounts.
-
-```tsql
-SELECT CAST(EOMONTH([order_date],0) AS date) Month
-      ,SUM([total_line_items_price]) GrossPrice
-	  ,SUM([total_discounts]) TotalDiscount
-      ,SUM([subtotal_price]) Subtotal
-  FROM [shop_rest].[dbo].[Orders]  
-  GROUP BY CAST(EOMONTH([order_date],0) AS DATE)
-```
-
-#### Monthly Sales, Discounts & Shipping Revenue
-```tsql
-SELECT 
-     ord.[Month]
-    ,ord.[GrossPrice]
-    ,ord.[TotalDiscount]
-    ,ord.[Subtotal]
-    ,ship.[ShipPrice]
-    ,(ord.[GrossPrice] - ord.[TotalDiscount] + ship.[ShipPrice]) TotalPrice
-FROM (
-    SELECT CAST(EOMONTH([order_date],0) AS date) Month
-          ,SUM([total_line_items_price]) GrossPrice
-          ,SUM([total_discounts]) TotalDiscount
-          ,SUM([subtotal_price]) Subtotal
-          ,SUM([total_tax]) TotalTax
-          ,SUM([total_price]) TotalPrice
-    FROM [shop_rest].[dbo].[Orders]  
-    GROUP BY CAST(EOMONTH([order_date],0) AS DATE)
-) ord 
-INNER JOIN (
-    SELECT SUM([ship_price]) ShipPrice, CAST(EOMONTH([order_date],0) AS date) Month
-    FROM [shop_rest].[dbo].[ShipLines]
-    GROUP BY CAST(EOMONTH([order_date],0) AS date)
-) ship
-ON ord.[Month] = ship.[Month]
-  ORDER BY ord.[Month]
+```shell
+sudo docker exec -it shop_sql bash /usr/scripts/add-cron.sh
 ```

@@ -1,10 +1,13 @@
-[Start](../start.md)>[Tables](./Tables.md)>dbo.DiscountApps
-
 # ![logo](../Images/table.svg) dbo.DiscountApps
 
-## <a name="#Description"></a>Description
+[Start](../start.md)>[Tables](./Tables.md)>dbo.DiscountApps
+
+## [](#Description) Description
+
 > Discount applied to each order
-## <a name="#Columns"></a>Columns _`11`_
+
+## [](#Columns) Columns _`11`_
+
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
 | |order_id|bigint|8|19|0|True|Order ID|
@@ -19,7 +22,8 @@
 | |target_type|nvarchar|255|0|0|False|Discount target type|
 | |code|nvarchar|255|0|0|False|Discount code|
 
-## <a name="#SqlScript"></a>SQL Script
+## [](#SqlScript) SQL Script
+
 ```SQL
 CREATE TABLE dbo.DiscountApps (
   order_id bigint NOT NULL,
@@ -37,8 +41,6 @@ CREATE TABLE dbo.DiscountApps (
 ON [PRIMARY]
 GO
 
-EXEC sys.sp_addextendedproperty N'MS_Description', N'Discount Applications for Each Order', 'SCHEMA', N'dbo', 'TABLE', N'DiscountApps'
-GO
 ```
 
 ___

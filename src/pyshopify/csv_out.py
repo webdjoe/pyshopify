@@ -1,5 +1,6 @@
 """Create folder with export in CSV files."""
 from pathlib import Path
+from configparser import SectionProxy
 
 
 def csv_path(csv_dir: str) -> Path:
@@ -10,14 +11,15 @@ def csv_path(csv_dir: str) -> Path:
     return base
 
 
-def csv_writer(table_dict: dict, j: int, csv_dir: str) -> None:
-    write_path = csv_path(csv_dir)
+def csv_send(table_dict: dict, csv_config: SectionProxy) -> None:
+    write_path = csv_path(csv_config.get('filepath'))
     for keys in table_dict.keys():
         file_path = write_path.joinpath(keys + ".csv")
-        csv_file = str(file_path)
         df = table_dict[keys]
-        if j > 2:
-            df.to_csv(csv_file, mode='a', header=True, index=False, encoding='utf-8-sig')
+        if file_path.is_file() is True:
+            df.to_csv(file_path, mode='a', header=True,
+                      index=False, encoding='utf-8-sig')
         else:
-            df.to_csv(csv_file, mode='w', header=True, index=False, encoding='utf-8-sig')
+            df.to_csv(file_path, mode='w', header=True,
+                      index=False, encoding='utf-8-sig')
     return
