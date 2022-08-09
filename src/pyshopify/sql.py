@@ -80,11 +80,12 @@ def sql_merge(data: dict,
     db = sql_config.get('database')
     for k, v in data.items():
         if k == 'Orders':
-            log(f"Writing orders run {j} from {v.created_at.min()}")
+            min_date = v.order_date.min().strftime('%b %d-%Y')
+            log(f"Writing orders run {j} from {min_date}\n")
         if v is None:
             log(f"No {k} data to merge")
             continue
-        log(f"Writing Table {k} to SQL Server")
+        log(f"Writing Table {k} to SQL Server\n")
         merge_dict = MergeDict[k]
         with engine.begin() as conn:
             meta = MetaData()
