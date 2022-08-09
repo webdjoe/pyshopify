@@ -1,10 +1,13 @@
-[Start](../start.md)>[Tables](./Tables.md)>dbo.DiscountCodes
-
 # ![logo](../Images/table.svg) dbo.DiscountCodes
 
-## <a name="#Description"></a>Description
+[Start](../start.md)>[Tables](./Tables.md)>dbo.DiscountCodes
+
+## [](#Description) Description
+
 > Discount Codes In Use for Each Order
-## <a name="#Columns"></a>Columns _`5`_
+
+## [](#Columns) Columns _`5`_
+
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
 | |order_id|bigint|8|19|0|True|Order ID|
@@ -13,7 +16,8 @@
 | |amount|money|8|19|4|True|Amount of discount|
 | |type|nvarchar|255|0|0|True|Type of discount|
 
-## <a name="#SqlScript"></a>SQL Script
+## [](#SqlScript) SQL Script
+
 ```SQL
 CREATE TABLE dbo.DiscountCodes (
   order_id bigint NOT NULL,

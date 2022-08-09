@@ -1,106 +1,169 @@
 """Process Shopify Return."""
 import pandas as pd
-import json
-from numpy import nan, sum
-from typing import Dict
-import timeit
-from pyshopify.vars import (keys_list,
-                            order_dtypes,
-                            cust_dtypes,
-                            ref_dtypes,
-                            ref_keys,
-                            refli_keys,
-                            adj_dtypes,
-                            adj_keys,
-                            item_dtypes,
-                            item_keys,
-                            cust_cols,
-                            cust_map,
-                            discapp_map,
-                            discapp_dtypes,
-                            disccode_dtypes,
-                            disccode_map,
-                            discapp_keys,
-                            shipline_keys,
-                            shipline_map,
-                            shipline_dtypes
-                            )
+from numpy import nan
+from typing import Dict, List, Optional
+from pyshopify.vars import PandasWorkVars as WorkVars
 
 
-def pandas_work(json_list: json) -> Dict[str, pd.DataFrame]:
+def pandas_work(json_list: list) -> Dict[str, pd.DataFrame]:
     """Parse orders API return data."""
-    starttime = timeit.default_timer()
     table_dict = {}
 
-    orders = pd.json_normalize(json_list, ['orders'])
+    orders = orders_work(json_list)
+    if orders is not None:
+        table_dict['Orders'] = orders
 
-    orders.drop(columns=orders.columns.difference(keys_list), inplace=True, axis='columns')
+    ship_lines = ship_lines_work(json_list)
+    if ship_lines is not None:
+        table_dict['ShipLines'] = ship_lines
 
-    orders.created_at = pd.to_datetime(orders.created_at)
-    orders.updated_at = pd.to_datetime(orders.updated_at)
-    orders.fillna(0)
+    refunds = refunds_work(json_list)
+    if refunds is not None:
+        table_dict['Refunds'] = refunds
 
-    orders = orders.astype(order_dtypes)
+        refund_li = refund_line_items_work(json_list)
+        if refund_li is not None:
+            table_dict['RefundLineItem'] = refund_li
 
-    orders['payment_gateway_names'] = orders['payment_gateway_names'].astype(str).str.replace('[', '', regex=False)
-    orders['payment_gateway_names'] = orders['payment_gateway_names'].str.replace(']', '', regex=False)
-    orders['payment_gateway_names'] = orders['payment_gateway_names'].str.replace("'", '', regex=False)
+        adjustments = adjustments_works(json_list)
+        if adjustments is not None:
+            table_dict['Adjustments'] = adjustments
 
-    orders.rename(columns={'created_at': 'order_date'}, inplace=True)
+    discount_apps = discount_app_work(json_list)
+    if discount_apps is not None:
+        table_dict['DiscountApps'] = discount_apps
 
-    table_dict['Orders'] = orders
+    discount_codes = discount_code_work(json_list)
+    if discount_codes is not None:
+        table_dict['DiscountCodes'] = discount_codes
 
-    shiplines = pd.json_normalize(json_list, ['orders', 'shipping_lines'],
-                                  meta=[['orders', 'id'], ['orders', 'created_at']])
+    line_items = line_item_work(json_list)
+    if line_items is not None:
+        table_dict['LineItems'] = line_items
+
+    order_attr = order_attr_work(json_list)
+    if order_attr is not None:
+        table_dict['OrderAttr'] = order_attr
+
+    return table_dict
+
+
+def order_attr_work(data: list) -> Optional[pd.DataFrame]:
+    """Parse order attribution data."""
+    attr = pd.json_normalize(data, ['orders'], max_level=1)
+    if len(attr.index) > 0:
+        attr.drop(columns=attr.columns.difference(WorkVars.order_attr_cols),
+                  inplace=True, axis='columns')
+        attr.rename(columns=WorkVars.order_attr_map, inplace=True)
+        attr.astype(WorkVars.order_attr_dtypes)
+        return attr
+    return None
+
+
+def orders_work(data: list) -> Optional[pd.DataFrame]:
+    """Parse order lines into dataframe from API response."""
+    orders = pd.json_normalize(data, ['orders'], sep='_')
+    if len(orders) > 0:
+        orders.drop(columns=orders.columns.difference(WorkVars.order_cols),
+                    inplace=True, axis='columns')
+        orders.created_at = pd.to_datetime(orders.created_at)
+        orders.updated_at = pd.to_datetime(orders.updated_at)
+        orders.fillna(0)
+
+        orders = orders.astype(WorkVars.order_dtypes)
+
+        orders['payment_gateway_names'] = (orders['payment_gateway_names']
+                                           .astype(str)
+                                           .str.replace('[', '', regex=False))
+        orders['payment_gateway_names'] = (orders['payment_gateway_names']
+                                           .str.replace(']', '', regex=False))
+        orders['payment_gateway_names'] = (orders['payment_gateway_names']
+                                           .str.replace("'", '', regex=False))
+
+        orders.rename(columns={'created_at': 'order_date'}, inplace=True)
+        return orders
+    return None
+
+
+def ship_lines_work(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse shipping lines to dataframe from API response."""
+    shiplines = pd.json_normalize(data, ['orders', 'shipping_lines'],
+                                  meta=[['orders', 'id'],
+                                        ['orders', 'created_at']])
     if len(shiplines.index) > 0:
-        shiplines.drop(columns=shiplines.columns.difference(shipline_keys), inplace=True, axis='columns')
-        for col in shipline_keys:
+        shiplines.drop(columns=shiplines.columns.difference(
+            WorkVars.ship_li_cols),
+            inplace=True, axis='columns')
+        for col in WorkVars.ship_li_cols:
             if col not in shiplines.columns:
                 shiplines[col] = ''
         collist = ['price', 'discounted_price']
         for column in collist:
-            shiplines[column] = shiplines[column].replace(r'\s+', nan, regex=True)
+            shiplines[column] = (shiplines[column]
+                                 .replace(r'\s+', nan, regex=True))
             shiplines[column] = shiplines[column].fillna(0)
-        shiplines.rename(columns=shipline_map, inplace=True)
+        shiplines.rename(columns=WorkVars.ship_li_map, inplace=True)
         shiplines.order_date = pd.to_datetime(shiplines.order_date)
-        shiplines.astype(shipline_dtypes)
-        table_dict['ShipLines'] = shiplines
+        shiplines.astype(WorkVars.ship_li_dtypes)
+        return shiplines
+    return None
 
 
-
-    refunds = pd.json_normalize(json_list, ['orders', 'refunds'])
+def refunds_work(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse refunds into dataframe from API Response."""
+    refunds = pd.json_normalize(data, ['orders', 'refunds'])
     if len(refunds.index) > 0:
-        refunds.drop(columns=refunds.columns.difference(ref_keys), inplace=True, axis='columns')
+        refunds.drop(columns=refunds.columns.difference(WorkVars.refund_cols),
+                     inplace=True, axis='columns')
         refunds.created_at = pd.to_datetime(refunds.created_at)
         refunds = refunds.fillna(0)
-        refunds = refunds.astype(ref_dtypes)
+        refunds = refunds.astype(WorkVars.refund_dtypes)
         refunds.rename(columns={'created_at': 'refund_date'}, inplace=True)
-        table_dict['Refunds'] = refunds
-        refundli = pd.json_normalize(json_list, ['orders', 'refunds', 'refund_line_items'],
-                                     meta=[['orders', 'refunds', 'id'], ['orders', 'id']])
+        return refunds
+    return None
 
-        if len(refundli.index) > 0:
-            refundli.rename(columns={
-                'orders.refunds.id': 'refund_id',
-                'orders.id': 'order_id',
-                'line_item.variant_id': 'variant_id',
-                'line_item.line_item_id': 'line_item_id'},
-                inplace=True)
-            refundli.drop(refundli.columns.difference(refli_keys), inplace=True, axis='columns')
-            table_dict['RefundLineItem'] = refundli
 
-        adjusts = pd.json_normalize(json_list, ['orders', 'refunds', 'order_adjustments'])
-        if len(adjusts.index) > 0:
-            adjusts.drop(adjusts.columns.difference(adj_keys), inplace=True, axis='columns')
-            adjusts = adjusts.fillna(0)
-            adjusts = adjusts.astype(adj_dtypes)
-            table_dict['Adjustments'] = adjusts
+def refund_line_items_work(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse refund line items from API response into dataframe."""
+    refundli = pd.json_normalize(data,
+                                 ['orders', 'refunds', 'refund_line_items'],
+                                 meta=[['orders', 'refunds', 'id'],
+                                       ['orders', 'id']])
+    if len(refundli.index) > 0:
+        refundli.rename(columns={
+            'orders.refunds.id': 'refund_id',
+            'orders.id': 'order_id',
+            'line_item.variant_id': 'variant_id',
+            'line_item.line_item_id': 'line_item_id'},
+            inplace=True)
+        refundli.drop(refundli.columns.difference(WorkVars.refund_li_cols),
+                      inplace=True, axis='columns')
+        return refundli
+    return None
 
-    discapp = pd.json_normalize(json_list, ['orders', 'discount_applications'],
-                                meta=[['orders', 'id'], ['orders', 'created_at']], sep='_')
+
+def adjustments_works(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse adjustments into dataframe from API response."""
+    adjusts = pd.json_normalize(data,
+                                ['orders', 'refunds', 'order_adjustments'])
+    if len(adjusts.index) > 0:
+        adjusts.drop(adjusts.columns.difference(WorkVars.adjustment_cols),
+                     inplace=True, axis='columns')
+        adjusts = adjusts.fillna(0)
+        adjusts = adjusts.astype(WorkVars.adjustment_dtypes)
+        return adjusts
+    return None
+
+
+def discount_app_work(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse discount application into dataframe."""
+    discapp = pd.json_normalize(data, ['orders', 'discount_applications'],
+                                meta=[['orders', 'id'],
+                                      ['orders', 'created_at']],
+                                sep='_')
     if len(discapp.index) > 0:
-        discapp.rename(columns=discapp_map, inplace=True)
-        for col in discapp_keys:
+        discapp.rename(columns=WorkVars.discount_app_map, inplace=True)
+        for col in WorkVars.discount_app_cols:
             if col not in discapp.columns:
                 discapp[col] = nan
         discapp.order_date = pd.to_datetime(discapp.order_date)
@@ -108,26 +171,41 @@ def pandas_work(json_list: json) -> Dict[str, pd.DataFrame]:
         discapp[['code']] = discapp[['code']].fillna('')
         discapp[['title']] = discapp[['title']].fillna('')
         discapp[['description']] = discapp[['description']].fillna('')
-        discapp = discapp.astype(discapp_dtypes)
-        table_dict['DiscountApps'] = discapp
+        discapp = discapp.astype(WorkVars.discount_app_dtypes)
+        return discapp
+    return None
 
-    disccode = pd.json_normalize(json_list, ['orders', 'discount_codes'],
-                                 meta=[['orders', 'id'], ['orders', 'created_at']], sep='_')
+
+def discount_code_work(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse discount code lines from API response into dataframe."""
+    disccode = pd.json_normalize(data, ['orders', 'discount_codes'],
+                                 meta=[['orders', 'id'],
+                                       ['orders', 'created_at']],
+                                 sep='_')
     if len(disccode.index) > 0:
-        disccode.rename(columns=disccode_map, inplace=True)
+        disccode.rename(columns=WorkVars.discount_code_map, inplace=True)
         disccode.order_date = pd.to_datetime(disccode.order_date)
         disccode = disccode.fillna(0)
-        disccode = disccode.astype(disccode_dtypes)
-        table_dict['DiscountCodes'] = disccode
+        disccode = disccode.astype(WorkVars.discount_code_dtypes)
+        return disccode
+    return None
 
-    lineitems = pd.json_normalize(json_list, ['orders', 'line_items'],
-                                  meta=[['orders', 'id'], ['orders', 'created_at']], max_level=1)
+
+def line_item_work(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse order line items into dataframe from API response."""
+    lineitems = pd.json_normalize(data, ['orders', 'line_items'],
+                                  meta=[['orders', 'id'],
+                                        ['orders', 'created_at']],
+                                  max_level=1)
 
     if len(lineitems.index) > 0:
-        lineitems.rename(columns={'orders.id': 'order_id', 'orders.created_at': 'order_date'}, inplace=True)
-        lineitems.drop(lineitems.columns.difference(item_keys), inplace=True, axis='columns')
+        lineitems.rename(columns={'orders.id': 'order_id',
+                                  'orders.created_at': 'order_date'},
+                         inplace=True)
+        lineitems.drop(lineitems.columns.difference(WorkVars.line_item_cols),
+                       inplace=True, axis='columns')
         lineitems.order_date = pd.to_datetime(lineitems.order_date)
-        for col in item_keys:
+        for col in WorkVars.line_item_cols:
             if col not in lineitems.columns:
                 lineitems[col] = nan
         lineitems[['name']] = lineitems[['name']].fillna('')
@@ -135,16 +213,21 @@ def pandas_work(json_list: json) -> Dict[str, pd.DataFrame]:
         lineitems[['sku']] = lineitems[['sku']].fillna('')
         lineitems[['variant_title']] = lineitems[['variant_title']].fillna('')
         lineitems = lineitems.fillna(0)
-        lineitems = lineitems.astype(item_dtypes)
-        table_dict['LineItems'] = lineitems
+        lineitems = lineitems.astype(WorkVars.line_item_dtypes)
+        return lineitems
+    return None
 
-    customers = pd.json_normalize(json_list, ['orders'], max_level=2, sep='_')
-    customers.drop(columns=customers.columns.difference(cust_cols), inplace=True, axis='columns')
-    customers.rename(columns=cust_map, inplace=True)
-    customers.created_at = pd.to_datetime(customers.created_at)
-    customers.order_date = pd.to_datetime(customers.order_date)
-    customers.dropna(inplace=True)
-    customers = customers.astype(cust_dtypes)
 
-    table_dict['Customers'] = customers
-    return table_dict
+def customers_work(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse order customers into dataframe from API response."""
+    customers = pd.json_normalize(data, ['customers'], sep='_')
+    if len(customers) > 0:
+        customers.drop(columns=customers.columns.difference(
+            WorkVars.customer_cols),
+            inplace=True, axis='columns')
+        customers.rename(columns=WorkVars.customer_map, inplace=True)
+        customers.created_at = pd.to_datetime(customers.created_at)
+        customers.updated_at = pd.to_datetime(customers.updated_at)
+        customers = customers.astype(WorkVars.customer_dtypes)
+        return customers
+    return None
