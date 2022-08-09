@@ -10,7 +10,7 @@
 
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
-|[![Primary Key PK_adj_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_adj_id](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Adjustment ID|
+|[![Primary Key PK_adj_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_adj_id](../Images/cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Adjustment ID|
 | |refund_id|bigint|8|19|0|True|Refund ID|
 | |order_id|bigint|8|19|0|True|Order ID|
 | |amount|float|8|53|0|True|Adjustment Amount|
@@ -22,7 +22,7 @@
 
 |Key|Name|Columns|Unique|Type|Description
 |---|---|---|---|---|---
-|[![Primary Key PK_adj_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_adj_id](../Images/Cluster.svg)](#Indexes)|PK_adj_id|id|True||Adjustment ID PK|
+|[![Primary Key PK_adj_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_adj_id](../Images/cluster.svg)](#Indexes)|PK_adj_id|id|True||Adjustment ID PK|
 
 ## [](#SqlScript) SQL Script
 

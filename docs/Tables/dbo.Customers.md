@@ -10,7 +10,7 @@
 
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
-|[![Primary Key PK_customers_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_customers_id](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Customer ID|
+|[![Primary Key PK_customers_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_customers_id](../Images/cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Customer ID|
 | |created_at|datetime|8|23|3|True|Customer created date|
 | |updated_at|datetime|8|23|3|True|Customer last updated date|
 | |email|nvarchar|255|0|0|False|Customer Email|
@@ -27,7 +27,7 @@
 
 |Key|Name|Columns|Unique|Type|Description
 |---|---|---|---|---|---
-|[![Primary Key PK_ordercustid](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ordercustid](../Images/Cluster.svg)](#Indexes)|PK_customers_id|id|True||Order ID unique PK|
+|[![Primary Key PK_ordercustid](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ordercustid](../Images/cluster.svg)](#Indexes)|PK_customers_id|id|True||Order ID unique PK|
 
 ## [](#SqlScript) SQL Script
 

@@ -10,7 +10,7 @@
 
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
-|[![Cluster Key PK_DateDimension](../Images/Cluster.svg)](#Indexes)|TheDate|date|3|10|0|False||
+|[![Cluster Key PK_DateDimension](../Images/cluster.svg)](#Indexes)|TheDate|date|3|10|0|False||
 | |TheDay|int|4|10|0|False||
 | |TheDaySuffix|char|2|0|0|False||
 | |TheDayName|nvarchar|30|0|0|False||
@@ -49,7 +49,7 @@
 
 |Key|Name|Columns|Unique|Type|Description
 |---|---|---|---|---|---
-|[![Cluster Key PK_DateDimension](../Images/Cluster.svg)](#Indexes)|PK_DateDimension|TheDate|True|||
+|[![Cluster Key PK_DateDimension](../Images/cluster.svg)](#Indexes)|PK_DateDimension|TheDate|True|||
 
 Credit goes to Aaron Bertrand for this amazing script - [Creating a date dimension or calendar table in SQL Server](https://www.mssqltips.com/sqlservertip/4054/creating-a-date-dimension-or-calendar-table-in-sql-server/)
 

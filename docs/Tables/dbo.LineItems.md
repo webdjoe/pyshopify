@@ -10,7 +10,7 @@
 
 | Key                                                                                                                                   | Name           | Data Type | Length | Precision | Scale | Not Null | Description          |
 |---------------------------------------------------------------------------------------------------------------------------------------|----------------|-----------|--------|-----------|-------|----------|----------------------|
-| [![Primary Key PK_line_item_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_line_item_id](../Images/Cluster.svg)](#Indexes) | id             | bigint    | 8      | 19        | 0     | True     | Line Item ID         |
+| [![Primary Key PK_line_item_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_line_item_id](../Images/cluster.svg)](#Indexes) | id             | bigint    | 8      | 19        | 0     | True     | Line Item ID         |
 |                                                                                                                                       | order_id       | bigint    | 8      | 19        | 0     | True     | Order ID             |
 |                                                                                                                                       | order_date     | datetime  | 8      | 23        | 3     | True     | Order Created Date   |
 |                                                                                                                                       | variant_id     | bigint    | 8      | 19        | 0     | True     | Unit variant ID      |
@@ -27,7 +27,7 @@
 
 |Key|Name|Columns|Unique|Type|Description
 |---|---|---|---|---|---
-|[![Primary Key PK_line_item_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_line_item_id](../Images/Cluster.svg)](#Indexes)|PK_line_item_id|id|True||Line Item Primary Key|
+|[![Primary Key PK_line_item_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_line_item_id](../Images/cluster.svg)](#Indexes)|PK_line_item_id|id|True||Line Item Primary Key|
 
 ## [](#SqlScript) SQL Script
 

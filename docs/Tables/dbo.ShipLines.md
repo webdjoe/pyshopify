@@ -10,7 +10,7 @@
 
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
-|[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Shipping line id|
+|[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Shipping line id|
 | |carrier_identifier|nvarchar|255|0|0|False|Shipping carrier ID|
 | |code|nvarchar|255|0|0|False|Shipping code|
 | |delivery_category|nvarchar|255|0|0|False|Shipment delivery category|
@@ -27,7 +27,7 @@
 
 |Key|Name|Columns|Unique|Type|Description
 |---|---|---|---|---|---
-|[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/Cluster.svg)](#Indexes)|PK_ShipLines|id|True|||
+|[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/cluster.svg)](#Indexes)|PK_ShipLines|id|True|||
 
 ## [](#SqlScript) SQL Script
 

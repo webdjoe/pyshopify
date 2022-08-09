@@ -10,7 +10,7 @@
 
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
-|[![Primary Key PK_refundlineitem_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_refundlineitem_id](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Refund Line Item ID|
+|[![Primary Key PK_refundlineitem_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_refundlineitem_id](../Images/cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Refund Line Item ID|
 | |refund_id|bigint|8|19|0|True|Refund ID|
 | |order_id|bigint|8|19|0|True|Order ID|
 | |line_item_id|bigint|8|19|0|True|Line Item ID|
@@ -23,7 +23,7 @@
 
 |Key|Name|Columns|Unique|Type|Description
 |---|---|---|---|---|---
-|[![Primary Key PK_refundlineitem_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_refundlineitem_id](../Images/Cluster.svg)](#Indexes)|PK_refundlineitem_id|id|True||Unique Refund Line Item ID PK|
+|[![Primary Key PK_refundlineitem_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_refundlineitem_id](../Images/cluster.svg)](#Indexes)|PK_refundlineitem_id|id|True||Unique Refund Line Item ID PK|
 
 ## [](#SqlScript) SQL Script
 
