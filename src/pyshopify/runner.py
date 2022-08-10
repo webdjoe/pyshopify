@@ -409,6 +409,7 @@ class ShopifyApp:
                                    self.sql_config)
                 if write_csv is True:
                     csv_send(order_dict, self.csv_config)
+                i += 1
 
         if customers is True:
             i = 1
@@ -421,6 +422,7 @@ class ShopifyApp:
                                    self.sql_config)
                 if write_csv is True:
                     csv_send(customer_dict, self.csv_config)
+                i += 1
 
     def orders_writer(self, write_csv: bool = False, write_sql: bool = False,
                       config: Optional[dict] = None) -> None:

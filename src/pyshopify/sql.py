@@ -81,7 +81,7 @@ def sql_merge(data: dict,
     for k, v in data.items():
         if k == 'Orders':
             min_date = v.order_date.min().strftime('%b %d-%Y')
-            log(f"Writing orders run {j} from {min_date}\n")
+            log(f"Writing {len(v.index)} orders run {j} from {min_date}\n")
         if v is None:
             log(f"No {k} data to merge")
             continue
