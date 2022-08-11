@@ -2,6 +2,7 @@
 from typing import Union, Tuple, Optional
 import re
 import requests
+import time
 from configparser import SectionProxy
 from requests import Response
 from requests.utils import CaseInsensitiveDict
@@ -28,11 +29,19 @@ def api_call(next_url: str, shop_conf: SectionProxy,
     """Call Shopify API."""
     shop_hdr = {'Content-Type': 'application/json',
                 'X-Shopify-Access-Token': shop_conf.get('access_token')}
-    if not page:
-        resp = requests.get(url=next_url, headers=shop_hdr,
-                            params=init_params)
-    else:
-        resp = requests.get(url=next_url, headers=shop_hdr)
-    if resp.status_code != 200:
-        return None
-    return resp
+    max_calls = 10
+    call_num = 0
+    while call_num < max_calls:
+        call_num += 1
+        if not page:
+            resp = requests.get(url=next_url, headers=shop_hdr,
+                                params=init_params)
+        else:
+            resp = requests.get(url=next_url, headers=shop_hdr)
+        if resp.status_code == 429:
+            retry = resp.headers.get('Retry-After', 2)
+            time.sleep(int(retry) * call_num)
+        resp.raise_for_status
+        if resp.status_code == 200:
+            return resp
+    return None
