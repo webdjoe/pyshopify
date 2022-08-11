@@ -10,7 +10,7 @@ from configparser import SectionProxy
 from pyshopify.api import api_call, header_link
 from pyshopify.configure import Config
 from pyshopify.csv_out import csv_send
-from pyshopify.return_parse import pandas_work, customers_work
+from pyshopify.return_parse import pandas_work, customers_work, products_work
 from pyshopify.vars import api_fields
 
 log = sys.stdout.write
@@ -286,12 +286,7 @@ class ShopifyApp:
             self.update_config({'shopify': shopify_config})
         orders_df: Dict[str, DataFrame] = {}
         for table_dict in self.__orders_runner():
-            for keys in table_dict:
-                if orders_df.get(keys) is None:
-                    orders_df[keys] = table_dict[keys].copy()
-                else:
-                    orders_df[keys] = pd.concat([table_dict.get(keys),
-                                                 orders_df.get(keys)])
+            orders_df = combine_dicts(orders_df, table_dict)
         return orders_df
 
     def customers_full_df(self, shopify_config: Optional[dict] = None
@@ -543,6 +538,101 @@ class ShopifyApp:
                          write_csv=True, write_sql=False,
                          config=config)
 
+    def products_writer(self, write_sql=False, write_csv=False,
+                        config_dict: Optional[dict] = None) -> None:
+        """Write Products Tables to SQL Server.
+        Args:
+            write_sql (bool): Write data to sql
+            write_csv (bool): Write data to csv
+            config_dict (Dict[str, Dict[str, str]]): Full config dictionary
+        Returns:
+            None
+        """
+        if write_sql is False and write_csv is False:
+            log("No output enabled")
+            return
+        if isinstance(config_dict, dict):
+            self.update_config(config_dict)
+        if write_sql is True:
+            if self.engine is None:
+                self.__init_engine()
+            if self.engine is None or self.sql_merge is None:
+                raise Exception("Unable to initialize SQL Engine")
+        if write_csv is True:
+            if self.csv_config.get('filepath') is None:
+                log("Please configure csv output directory")
+                return
+        i = 0
+        for products_data in self.__products_runner():
+            i += 1
+            if write_sql is True and self.sql_merge is not None:
+                self.sql_merge(products_data, i,
+                               self.engine, self.sql_config)
+            if write_csv is True:
+                csv_send(products_data, self.csv_config)
+
+    def products_to_sql(self, config_dict: Optional[dict] = None) -> None:
+        """Write Products data to SQL Server.
+        Args:
+            config_dict (Dict[str, Dict[str, str]]): Full config dictionary
+        """
+        self.products_writer(write_sql=True, write_csv=False,
+                             config_dict=config_dict)
+
+    def products_to_csv(self, config_dict: Optional[dict] = None) -> None:
+        """Write products data to CSV files
+
+        Args:
+            config_dict (Optional[dict], optional): Full config dict, optional
+        Returns:
+            None
+        """
+        self.products_writer(write_sql=False, write_csv=True,
+                             config_dict=config_dict)
+
+    def get_active_inventory(self) -> Dict[str, DataFrame]:
+        """Get inventory quantities of active products"""
+        products = self.get_products()
+        prod_table = products.get('Products')
+        variant_table = products.get('Variants')
+        if not isinstance(prod_table, DataFrame) or \
+                not isinstance(variant_table, DataFrame):
+            raise Exception("Unable to get products")
+        prod_table = prod_table.loc[prod_table['status'] == 'active']
+        variants = variant_table.loc[variant_table['product_id'].isin(
+            prod_table['id'].values)]
+        variants = variants.loc[variants['inventory_management'] == 'shopify']
+        variants.drop(columns=variants.columns.difference(
+            ['product_id', 'sku', 'title', 'inventory_quantity']),
+                      inplace=True)
+        return products
+
+    def get_products(self) -> Dict[str, DataFrame]:
+        """Get Products and Variants Data Dictionary of DataFrames."""
+        products: Dict[str, DataFrame] = {}
+        for products_data in self.__products_runner():
+            products = combine_dicts(products, products_data)
+        return products
+
+    def __products_runner(self, extra_params: dict = {}
+                          ) -> Iterator[Dict[str, DataFrame]]:
+        """Pulls product data yielding each page."""
+        url = self.__url_builder('products.json')
+        init_params = {
+            "limit": 250,
+        }
+        init_params.update(extra_params)
+        products_data = self.__request_runner(url, init_params)
+        i = 1
+        while True:
+            try:
+                resp_data = next(products_data)
+            except StopIteration:
+                break
+            table_dict = products_work(resp_data.get('products'))
+            yield table_dict
+            i += 1
+
     def __customers_runner(self) -> Iterator[Dict[str, DataFrame]]:
         """Iterate customers API Return."""
         url = self.__url_builder('customers.json')
@@ -562,10 +652,9 @@ class ShopifyApp:
             table_dict = {
                 'Customers': customers_work(resp_data)
             }
-            yield table_dict
-            if table_dict is None:
+            if table_dict.get('Customers') is None:
                 break
-
+            yield table_dict
             i += 1
 
     def __orders_runner(self) -> Iterator[Dict[str, DataFrame]]:
@@ -615,3 +704,14 @@ class ShopifyApp:
             url, self.retry_after = header_link(resp.headers)
 
             yield resp.json()
+
+
+def combine_dicts(dict1: Dict[str, DataFrame], dict2: Dict[str, DataFrame]
+                  ) -> Dict[str, DataFrame]:
+    """Combine two dictionaries."""
+    for k, v in dict2.items():
+        if dict1.get(k) is None:
+            dict1[k] = v.copy()
+        else:
+            dict1[k] = pd.concat([dict1[k], v], axis=0, ignore_index=True)
+    return dict1

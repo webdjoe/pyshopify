@@ -321,6 +321,107 @@ class PandasWorkVars:
         'source_identifier': 'object',
         'source_url': 'object',
     }
+    products_cols: List[str] = [
+        'id',
+        'title',
+        'body_html',
+        'vendor',
+        'product_type',
+        'created_at',
+        'handle',
+        'updated_at',
+        'published_at',
+        'template_suffix',
+        'status',
+        'published_scope',
+        'tags',
+        'admin_graphql_api_id',
+        'image_src'
+    ]
+    products_dtypes: Dict[str, str] = {
+        'id': 'Int64',
+        'title': 'string',
+        'body_html': 'string',
+        'vendor': 'string',
+        'product_type': 'string',
+        'handle': 'string',
+        'template_suffix': 'string',
+        'status': 'string',
+        'published_scope': 'string',
+        'tags': 'string',
+        'admin_graphql_api_id': 'string',
+        'image_src': 'string'
+    }
+    variants_cols: List[str] = [
+        'product_id',
+        'id',
+        'title',
+        'price',
+        'sku',
+        'position',
+        'inventory_policy',
+        'compare_at_price',
+        'fulfillment_service',
+        'inventory_management',
+        'option1',
+        'option2',
+        'option3',
+        'created_at',
+        'updated_at',
+        'barcode',
+        'grams',
+        'image_id',
+        'weight',
+        'weight_unit',
+        'inventory_item_id',
+        'inventory_quantity',
+        'old_inventory_quantity',
+        'requires_shipping',
+        'admin_graphql_api_id'
+        ]
+
+    variants_dtypes: Dict[str, str] = {
+        'product_id': 'Int64',
+        'id': 'Int64',
+        'title': 'string',
+        'price': 'float64',
+        'sku': 'string',
+        'position': 'Int64',
+        'inventory_policy': 'string',
+        'compare_at_price': 'float64',
+        'fulfillment_service': 'string',
+        'inventory_management': 'string',
+        'option1': 'string',
+        'option2': 'string',
+        'option3': 'string',
+        'created_at': 'string',
+        'updated_at': 'string',
+        'barcode': 'string',
+        'grams': 'Int64',
+        'image_id': 'Int64',
+        'weight': 'float64',
+        'weight_unit': 'string',
+        'inventory_item_id': 'Int64',
+        'inventory_quantity': 'Int64',
+        'old_inventory_quantity': 'Int64',
+        'requires_shipping': 'bool',
+        'admin_graphql_api_id': 'string'
+    }
+
+    options_cols: List[str] = [
+        'product_id',
+        'id',
+        'name',
+        'position',
+        'values'
+        ]
+    options_dtypes: Dict[str, str] = {
+        'product_id': 'int64',
+        'id': 'int64',
+        'name': 'string',
+        'position': 'int64',
+        'values': 'string'
+    }
 
 
 def merge_str(db: str, schema: str, tbl_name: str, col_names: List[str],
@@ -339,6 +440,8 @@ def merge_str(db: str, schema: str, tbl_name: str, col_names: List[str],
         if isinstance(match_on, list):
             update_cols = [col for col in col_names if col not in set(
                     merge_cols + match_on)]
+        else:
+            update_cols = [col for col in col_names if col not in merge_cols]
         update_list = ", ".join(f"TARGET.[{col}] = SOURCE.[{col}]"
                                 for col in update_cols)
         return f"""
@@ -403,5 +506,19 @@ MergeDict: Dict[str, Dict[str, Union[list, str, bool]]] = {
     "Adjustments": {
         "merge_cols": ["id"],
         "update": False
+    },
+    "Products": {
+        "merge_cols": ["id"],
+        "match_on": ["updated_at"],
+        "update": True
+    },
+    "Variants": {
+        "merge_cols": ["id"],
+        "match_on": ["updated_at"],
+        "update": True
+    },
+    "ProductOptions": {
+        "merge_cols": ["id"],
+        "update": True
     }
 }

@@ -18,6 +18,7 @@ The Structure of the SQL Database is described in depth in the [Docs](docs) fold
   - [Data Returned](#data-returned)
     - [Orders Data](#orders-data)
     - [Customers Data](#customers-data)
+    - [Product Data](#product-data)
   - [Configuration](#configuration)
     - [Default Configuration](#default-configuration)
     - [Environment Variables](#environment-variables)
@@ -33,6 +34,7 @@ The Structure of the SQL Database is described in depth in the [Docs](docs) fold
     - [Updating Configuration](#updating-configuration)
       - [Full Configuration Dictionary](#full-configuration-dictionary)
       - [Shopify Configuration Dictionary](#shopify-configuration-dictionary)
+    - [Getting Product and Inventory Data](#getting-product-and-inventory-data)
     - [Returning Full Dataset in a Dictionary of DataFrames](#returning-full-dataset-in-a-dictionary-of-dataframes)
     - [Iterating through Data](#iterating-through-data)
     - [Writing to CSV and SQL Server](#writing-to-csv-and-sql-server)
@@ -41,6 +43,8 @@ The Structure of the SQL Database is described in depth in the [Docs](docs) fold
   - [Data Structure](#data-structure)
   - [Database Structure](#database-structure)
     - [Database Working Tables](#database-working-tables)
+    - [Orders Tables](#orders-tables)
+    - [Products Tables](#products-tables)
   - [Database script](#database-script)
   - [Docker Container](#docker-container)
     - [Docker Compose](#docker-compose)
@@ -71,6 +75,14 @@ The following is a brief summary of the data being returned. The keys of the ret
 | Key/Table                                           | Description                                                        |
 |-----------------------------------------------------|--------------------------------------------------------------------|
 | [Customers](docs/Tables/dbo.Customers.md)           | Customer purchase totals, numbers of orders, last order, geography |
+
+### Product Data
+
+| Key/Table                                           | Description                                                        |
+|-----------------------------------------------------|--------------------------------------------------------------------|
+| [Products](docs/Tables/dbo.Products.md)           | Main product listing id, title, description, image, configuration |
+| [ProductVariants](docs/Tables/dbo.ProductVariants.md)           | Product Variant listings, title, sku inventory, options   |
+| [ProductOptions](docs/Tables/dbo.ProductOptions.md)           | Product Variant Options configuration and positioning   |
 
 ## Configuration
 
@@ -314,6 +326,34 @@ app.return_full_df(shopify_config=shopify_config)
 
 ```
 
+### Getting Product and Inventory Data
+
+Products and variant data can be pulled into a dictionary of DataFrames or written to SQL Server or a CSV file.
+
+```python
+from pyshopify.runner import ShopifyApp()
+app = ShopifyApp()
+
+# Get all product and inventory data in a dictionary of dataframes
+product_details = app.get_products()
+# product_details = {
+#   Products: product_df,
+#   Variants: variant_df,
+#   ProductOptions: options_df
+# }
+
+# Get active product inventory
+inventory = app.get_active_inventory()
+# inventory = DataFrame with columns: 
+# product_id, sku, title, inventory_quantity
+
+# Write Inventory to CSV or SQL Server
+app.products_writer(write_sql=True, write_csv=Tru, config_dict=None)
+
+# Write product and inventory directly to SQL Server
+app.products_to_sql(config_dict=None)
+```
+
 ### Returning Full Dataset in a Dictionary of DataFrames
 
 A full dataset can be returned with the entire date range in one dictionary of dataframes. This should only be used with smaller date ranges to avoid memory issues.
@@ -503,6 +543,8 @@ Click on each item for more details.
 
 ### [Database Working Tables](docs/tables.md)
 
+### Orders Tables
+
 | Key/Table                                           | Description                                                                               |
 |-----------------------------------------------------|-------------------------------------------------------------------------------------------|
 | [Orders](docs/Tables/dbo.Orders.md)                 | Order ID's, date, pricing details, fulfilment status, financial status                    |
@@ -515,6 +557,16 @@ Click on each item for more details.
 | [Refunds](docs/Tables/dbo.Refunds.md)               | Order Refunds                                                                             |
 | [ShipLines](docs/Tables/dbo.ShipLines.md)           | Order ID, shipping pricing, carrier, code, source, title                                  |
 | [Customers](docs/Tables/dbo.Customers.md)           | Customer purchase totals, numbers of orders, last order, geography                        |
+
+
+### Products Tables
+
+| Key/Table                                           | Description                                                        |
+|-----------------------------------------------------|--------------------------------------------------------------------|
+| [Products](docs/Tables/dbo.Products.md)           | Main product listing id, title, description, image, configuration |
+| [ProductVariants](docs/Tables/dbo.ProductVariants.md)           | Product Variant listings, title, sku inventory, options   |
+| [ProductOptions](docs/Tables/dbo.ProductOptions.md)           | Product Variant Options configuration and positioning   |
+
 
 A [DateDimension](docs/Tables/dbo.DateDimension.md) table is included for easier analysis
 

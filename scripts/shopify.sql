@@ -358,3 +358,81 @@ CREATE TABLE $(SchemaName).[ShipLines](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE $(SchemaName).Products (
+  id BIGINT NOT NULL
+ ,title NVARCHAR(255) NULL
+ ,body_html NVARCHAR(MAX) NULL
+ ,vendor NVARCHAR(255) NULL
+ ,product_type NVARCHAR(255) NULL
+ ,created_at DATETIMEOFFSET NOT NULL
+ ,handle NVARCHAR(255) NULL
+ ,updated_at DATETIMEOFFSET NOT NULL
+ ,published_at DATETIMEOFFSET NULL
+ ,template_suffix NVARCHAR(255) NULL
+ ,status NVARCHAR(255) NULL
+ ,published_scope NVARCHAR(255) NULL
+ ,tags NVARCHAR(MAX) NULL
+ ,admin_graphql_api_id NVARCHAR(255) NULL
+ ,image_src NVARCHAR(255) NULL
+ ,CONSTRAINT PK_products PRIMARY KEY CLUSTERED (id)
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE $(SchemaName).Variants (
+  id bigint NOT NULL,
+  product_id bigint NOT NULL,
+  title nvarchar(255) NULL,
+  price money NULL,
+  sku nvarchar(255) NULL,
+  position int NULL,
+  inventory_policy nvarchar(255) NULL,
+  compare_at_price money NULL,
+  fulfillment_service nvarchar(255) NULL,
+  inventory_management nvarchar(255) NULL,
+  option1 nvarchar(255) NULL,
+  option2 nvarchar(255) NULL,
+  option3 nvarchar(255) NULL,
+  created_at datetimeoffset NULL,
+  updated_at datetimeoffset NULL,
+  barcode bigint NULL,
+  grams int NULL,
+  image_id bigint NULL,
+  weight float NULL,
+  weight_unit nvarchar(50) NULL,
+  inventory_item_id bigint NULL,
+  inventory_quantity int NULL,
+  old_inventory_quantity int NULL,
+  requires_shipping bit NULL,
+  admin_graphql_api_id nvarchar(255) NULL
+)
+GO
+
+ALTER TABLE $(SchemaName).Variants
+  ADD CONSTRAINT PK_Variants PRIMARY KEY CLUSTERED (id)
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE $(SchemaName).ProductOptions (
+  id bigint NOT NULL,
+  product_id bigint NOT NULL,
+  name nvarchar(100) NULL,
+  position int NULL,
+  [values] nvarchar(max) NULL
+)
+GO
+
+ALTER TABLE $(SchemaName).ProductOptions
+  ADD CONSTRAINT PK_options PRIMARY KEY CLUSTERED (id)
+GO

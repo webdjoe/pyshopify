@@ -5,6 +5,62 @@ from typing import Dict, List, Optional
 from pyshopify.vars import PandasWorkVars as WorkVars
 
 
+def products_work(json_list: list) -> Dict[str, pd.DataFrame]:
+    """Parse Products data"""
+    products_dict = {}
+
+    prod_table = products_parse(json_list)
+    if prod_table is not None:
+        products_dict['Products'] = prod_table
+
+    variants_table = variants_parse(json_list)
+    if variants_table is not None:
+        products_dict['Variants'] = variants_table
+
+    options_table = options_parse(json_list)
+    if options_table is not None:
+        products_dict['ProductOptions'] = options_table
+    return products_dict
+
+
+def products_parse(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse products into dataframe from API response."""
+    products = pd.json_normalize(data, sep='_')
+    if len(products.index) > 0:
+        products.drop(columns=products.columns.difference(
+            WorkVars.products_cols), inplace=True, axis='columns')
+        products.astype(WorkVars.products_dtypes)
+        products.created_at = pd.to_datetime(products.created_at)
+        products.updated_at = pd.to_datetime(products.updated_at)
+        products.published_at = pd.to_datetime(products.published_at)
+        return products
+    return None
+
+
+def variants_parse(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse variants into dataframe from API response."""
+    variants = pd.json_normalize(data, ['variants'])
+    if len(variants.index) > 0:
+        variants.drop(columns=variants.columns.difference(
+            WorkVars.variants_cols), inplace=True, axis='columns')
+        variants.created_at = pd.to_datetime(variants.created_at)
+        variants.updated_at = pd.to_datetime(variants.updated_at)
+        variants = variants.astype(WorkVars.variants_dtypes)
+        return variants
+    return None
+
+
+def options_parse(data: List[dict]) -> Optional[pd.DataFrame]:
+    """Parse Product Options Data."""
+    options = pd.json_normalize(data, ['options'])
+    if len(options.index) > 0:
+        options.drop(columns=options.columns.difference(WorkVars.options_cols),
+                     inplace=True, axis='columns')
+        options = options.astype(WorkVars.options_dtypes)
+        return options
+    return None
+
+
 def pandas_work(json_list: list) -> Dict[str, pd.DataFrame]:
     """Parse orders API return data."""
     table_dict = {}
