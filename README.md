@@ -11,6 +11,8 @@ This has the flexibility of exporting the data to a SQL Server ( along with othe
 
 The Structure of the SQL Database is described in depth in the [Docs](docs) folder, an SQL script to build the database is in the scripts folder [setup.sql](scripts/setup.sql).
 
+This requires the creation of a private app in the Shopify Admin center -> Setting -> Apps and Sales Channels -> Develop Apps.
+
 ## Table of Contents
 
 - [Shopify Orders Rest API Wrapper and Data Export](#shopify-orders-rest-api-wrapper-and-data-export)
