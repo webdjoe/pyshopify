@@ -1,9 +1,9 @@
 """API Call to Shopify."""
-from typing import Union, Tuple, Optional
-import re
-import requests
 import time
+import re
 from configparser import SectionProxy
+from typing import Union, Tuple, Optional
+import requests
 from requests import Response
 from requests.utils import CaseInsensitiveDict
 
@@ -35,13 +35,13 @@ def api_call(next_url: str, shop_conf: SectionProxy,
         call_num += 1
         if not page:
             resp = requests.get(url=next_url, headers=shop_hdr,
-                                params=init_params)
+                                params=init_params, timeout=30)
         else:
-            resp = requests.get(url=next_url, headers=shop_hdr)
+            resp = requests.get(url=next_url, headers=shop_hdr, timeout=30)
         if resp.status_code == 429:
             retry = resp.headers.get('Retry-After', 2)
             time.sleep(int(retry) * call_num)
-        resp.raise_for_status
+        resp.raise_for_status()
         if resp.status_code == 200:
             return resp
     return None

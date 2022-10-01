@@ -4,7 +4,7 @@
 
 ## [](#Description) Description
 
-> Product listing data
+> Options associated with each product
 
 ## [](#Columns) Columns
 
@@ -18,9 +18,9 @@
 
 ## [](#Indexes) Indexes
 
-|Key|Name|Columns|Unique|Type|Description
-|---|---|---|---|---|---
-|[![Primary Key PK_ProductOptions}](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ProductOptions](../Images/cluster.svg)](#Indexes)|PK_ProductOptions|id|True||Product Options ID PK|
+|Key|Name|Columns|Unique|
+|---|---|---|---|
+|[![Primary Key PK_ProductOptions}](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ProductOptions](../Images/cluster.svg)](#Indexes)|PK_ProductOptions|id|True|
 
 ## [](#SqlScript) SQL Script
 

@@ -10,44 +10,50 @@
 
 |Key|Name|Data Type|Length|Precision|Scale|Not Null|Description
 |---|---|---|---|---|---|---|---
-|[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Shipping line id|
-| |carrier_identifier|nvarchar|255|0|0|False|Shipping carrier ID|
-| |code|nvarchar|255|0|0|False|Shipping code|
-| |delivery_category|nvarchar|255|0|0|False|Shipment delivery category|
-| |ship_discount_price|money|8|19|4|False|Shipping discounted price|
-| |ship_price|money|8|19|4|False|Shipping price|
-| |phone|nvarchar|255|0|0|False|Shipping phone|
-| |requested_fulfillment_id|nvarchar|255|0|0|False|Fulfillment ID|
-| |source|nvarchar|255|0|0|False|Shipment source|
-| |title|nvarchar|255|0|0|False|Shipping title|
-| |order_id|bigint|8|19|0|False|Order ID|
-| |order_date|datetime|8|23|3|False|Order_date|
+|[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Ship line ID|
+|[![Indexes IDX_ShipLines](../Images/index.svg)](#Indexes)|processed_at|datetime|8|23|3|True|Datetime order was processed|
+|[![Indexes IDX_ShipLines](../Images/index.svg)](#Indexes)|order_id|bigint|8|19|0|True|Order ID of shipping line|
+||carrier_identifier|nvarchar|255|0|0|False|Shipping carrier ID|
+||code|nvarchar|255|0|0|False|Shipping carrier code|
+||delivery_category|nvarchar|255|0|0|False|Delivery type - pickup|
+||discounted_price|money|8|19|4|True||
+||price|money|8|19|4|True||
+||phone|nvarchar|255|0|0|False||
+||requested_fulfillment_service_id|nvarchar|255|0|0|False||
+||source|nvarchar|255|0|0|False|Order of Item shipped|
+||title|nvarchar|255|0|0|False|Title of shipping method|
 
 ## [](#Indexes) Indexes _`1`_
 
-|Key|Name|Columns|Unique|Type|Description
-|---|---|---|---|---|---
-|[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/cluster.svg)](#Indexes)|PK_ShipLines|id|True|||
+|Key|Name|Columns|Unique|
+|---|---|---|---|
+||IDX_ShipLines|order_id, processed_at|False|
+|[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/Cluster.svg)](#Indexes)|PK_ShipLines|id|True|
 
 ## [](#SqlScript) SQL Script
 
 ```SQL
 CREATE TABLE dbo.ShipLines (
   id bigint NOT NULL,
+  processed_at datetime NOT NULL,
+  order_id bigint NOT NULL,
   carrier_identifier nvarchar(255) NULL,
   code nvarchar(255) NULL,
   delivery_category nvarchar(255) NULL,
-  ship_discount_price money NULL,
-  ship_price money NULL,
+  discounted_price money NOT NULL,
+  price money NOT NULL,
   phone nvarchar(255) NULL,
-  requested_fulfillment_id nvarchar(255) NULL,
+  requested_fulfillment_service_id nvarchar(255) NULL,
   source nvarchar(255) NULL,
   title nvarchar(255) NULL,
-  order_id bigint NULL,
-  order_date datetime NULL,
   CONSTRAINT PK_ShipLines PRIMARY KEY CLUSTERED (id)
 )
 ON [PRIMARY]
+GO
+
+CREATE INDEX IDX_ShipLines
+  ON dbo.ShipLines (order_id, processed_at)
+  ON [PRIMARY]
 GO
 ```
 

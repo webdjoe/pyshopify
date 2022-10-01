@@ -4,21 +4,21 @@ touch /etc/profile.d/mssql.sh
 chmod +x /etc/profile.d/mssql.sh
 
 if [[ -z "$SHOPIFY_DB_NAME" ]]; then
-    SHOPIFY_DB_NAME="shop_rest";
+    SHOPIFY_DB_NAME="shop_rest"
     export SHOPIFY_DB_NAME
     sed -i '/SHOPIFY_DB_NAME/d' /etc/profile.d/mssql.sh
     echo export SHOPIFY_DB_NAME="$SHOPIFY_DB_NAME" >> /etc/profile.d/mssql.sh
 fi
 
 if [[ -z "$SHOPIFY_DB_SCHEMA" ]]; then
-    SHOPIFY_DB_SCHEMA="dbo";
+    SHOPIFY_DB_SCHEMA="dbo"
     export SHOPIFY_DB_SCHEMA
     sed -i '/SHOPIFY_DB_SCHEMA/d' /etc/profile.d/mssql.sh
     echo SHOPIFY_DB_SCHEMA="$SHOPIFY_DB_SCHEMA" >> /etc/profile.d/mssql.sh
 fi
 
 if [[ -z "$STARTING_DATE" ]]; then
-    STARTING_DATE="20190101";
+    STARTING_DATE="20190101"
     export STARTING_DATE
     sed -i '/STARTING_DATE/d' /etc/profile.d/mssql.sh
     echo STARTING_DATE="$STARTING_DATE" >> /etc/profile.d/mssql.sh
@@ -36,6 +36,21 @@ if [[ -z "$SHOPIFY_DB_PASSWORD" ]]; then
     export SHOPIFY_DB_PASSWORD
     sed -i '/SHOPIFY_DB_PASSWORD/d' /etc/profile.d/mssql.sh
     echo SHOPIFY_DB_PASSWORD="$SHOPIFY_DB_PASSWORD" >> /etc/profile.d/mssql.sh
+fi
+
+if [[ -z "$CONFIG_FILE" ]]; then
+  if [[ -f "/root/config.ini" ]]; then
+    CONFIG_FILE="/root/config.ini"
+    export CONFIG_FILE
+    sed -i '/CONFIG_FILE/d' /etc/profile.d/mssql.sh
+    echo CONFIG_FILE="$CONFIG_FILE" >> /etc/profile.d/mssql.sh
+  fi
+else
+  if [[ -f "$CONFIG_FILE" ]]; then
+    export CONFIG_FILE
+    sed -i '/CONFIG_FILE/d' /etc/profile.d/mssql.sh
+    echo CONFIG_FILE="$CONFIG_FILE" >> /etc/profile.d/mssql.sh
+  fi
 fi
 
 /usr/scripts/configure-db.sh &

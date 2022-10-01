@@ -39,6 +39,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'shopify_cli = pyshopify.cli:cli_runner',
+            'shopify_db = pyshopify.cli:build_database',
         ],
     }
 )

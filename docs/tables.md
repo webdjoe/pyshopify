@@ -13,6 +13,8 @@
 | [dbo.Products](Tables/dbo.Products.md)           | Product & Listing Data                                |
 | [dbo.Variants](Tables/dbo.Variants.md)           | Product Variant details & Inventory                                |
 | [dbo.ProductOptions](Tables/dbo.ProductOptions.md)           | Product & variant options configurations                          |
+|[dbo.InventoryLevels](Tables/dbo.InventoryLevels.md)|Inventory Levels for items at each inventory location|
+|[dbo.InventoryLocations](Tables/dbo.InventoryLocations.md)|Inventory locations |
 
 ## ![Table](Images/table.svg) [Orders Tables](Tables/Tables.md)
 
@@ -20,7 +22,8 @@
 |----------------------------------------------------|-------------------------------------------------|
 | [dbo.Orders](Tables/dbo.Orders.md)                 | Order Details                                   |
 | [dbo.OrderAttr](Tables/dbo.OrderAttr.md)           | Order source, campaign & attribution details    |
-| [dbo.Adjustments](Tables/dbo.Adjustments.md)       | Order Refund Adjustments                        |
+|[dbo.OrderPrices](Tables/dbo.OrderPrices.md)|Amounts charged for order|
+| [dbo.Adjustments](Tables/dbo.Adjustments.md)       | Adjustments on order for refunding shipping and refund discrepancies                       |
 | [dbo.DateDimension](Tables/dbo.DateDimension.md)   | Date Dimension Table for Analysis               |
 | [dbo.DiscountApps](Tables/dbo.DiscountApps.md)     | Discount Applications for Each Order            |
 | [dbo.DiscountCodes](Tables/dbo.DiscountCodes.md)   | Discount Codes In Use for Each Order            |

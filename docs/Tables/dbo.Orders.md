@@ -6,67 +6,69 @@
 
 > Order Details
 
-## [](#Columns) Columns _`21`_
+## [](#Columns) Columns _`16`_
 
 | Key                                                                                                                         | Name                   | Data Type | Length | Precision | Scale | Not Null | Description                                                 |
 |-----------------------------------------------------------------------------------------------------------------------------|------------------------|-----------|--------|-----------|-------|----------|-------------------------------------------------------------|
-| [![Primary Key PK_OrderID](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_OrderID](../Images/cluster.svg)](#Indexes) | id                     | bigint    | 8      | 19        | 0     | True     | Order ID                                                    |
-|                                                                                                                             | order_date             | datetime  | 8      | 23        | 3     | True     | Order Date                                                  |
-|                                                                                                                             | number                 | bigint    | 8      | 19        | 0     | True     | Order Number                                                |
-|                                                                                                                             | total_price            | float     | 8      | 53        | 0     | True     | Order Total Price - including shipping, taxes & discounts   |
-|                                                                                                                             | subtotal_price         | float     | 8      | 53        | 0     | True     | Order Subtotal - including discounts, not shipping or taxes |
-|                                                                                                                             | total_weight           | float     | 8      | 53        | 0     | True     | Order weight                                                |
-|                                                                                                                             | total_tax              | float     | 8      | 53        | 0     | True     | Total Tax on Order                                          |
-|                                                                                                                             | total_discounts        | float     | 8      | 53        | 0     | False    | Total Discounts applied                                     |
-|                                                                                                                             | total_line_items_price | float     | 8      | 53        | 0     | False    | Total price of line item                                    |
-|                                                                                                                             | name                   | nvarchar  | 255    | 0         | 0     | True     | Order name                                                  |
-|                                                                                                                             | total_price_usd        | float     | 8      | 53        | 0     | True     | Order Total Price - including shipping, taxes & discounts   |
-|                                                                                                                             | order_number           | bigint    | 8      | 19        | 0     | False    | Order Name without prefix                                   |
-|                                                                                                                             | processing_method      | nvarchar  | 255    | 0         | 0     | False    | Payment method                                              |
-|                                                                                                                             | source_name            | nvarchar  | 255    | 0         | 0     | False    | Source of sale                                              |
-|                                                                                                                             | fulfillment_status     | nvarchar  | 255    | 0         | 0     | False    | Fulfillment status                                          |
-|                                                                                                                             | payment_gateway_names  | nvarchar  |        | 0         | 0     | False    | Payment methods in comma separated string                   |
-|                                                                                                                             | email                  | nvarchar  | 255    | 0         | 0     | False    | Email of customer                                           |
-|                                                                                                                             | updated_at             | datetime  | 8      | 23        | 3     | False    | Order updated date                                          |
-|                                                                                                                             | financial_status       | nvarchar  | 255    | 0         | 0     | False    | Financial status of order                                   |
-|                                                                                                                             | customer_id            | bigint    | 8      | 19        | 0     | False    | Customer ID of order                                        |
-|                                                                                                                             | tags                   | nvarchar  |        | 0         | 0     | False    | Tags in comma separated string                              |
+|[![Primary Key PK_OrderID](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_OrderID](../Images/Cluster.svg)](#Indexes)|id|bigint|8|19|0|True|Order ID|
+||created_at|datetime|8|23|3|True|Datetime order was created|
+||updated_at|datetime|8|23|3|True|Datetime order was updated|
+|[![Indexes IDX_Orders_processed_at](../Images/index.svg)](#Indexes)|processed_at|datetime|8|23|3|True|Datetime order was processed - used for analytics|
+||number|bigint|8|19|0|True|Numeric order number|
+||total_weight|float|8|53|0|True|Total weight of items ordered|
+||name|nvarchar|50|0|0|True|Order number and prefix|
+||order_number|bigint|8|19|0|True|Padded number of order|
+||processing_method|nvarchar|255|0|0|False|Charge processing method|
+||source_name|nvarchar|50|0|0|False|The method which the order was placed|
+||fulfillment_status|nvarchar|50|0|0|False|Tracking status of order|
+||payment_gateway_names|nvarchar|255|0|0|False|Payment processing method|
+||email|nvarchar|255|0|0|False|Email address of customer that placed order|
+||financial_status|nvarchar|50|0|0|False|The status of the payment|
+|[![Indexes IDX_Orders_customer_id](../Images/index.svg)](#Indexes)|customer_id|bigint|8|19|0|False|ID of customer that placed order|
+||tags|nvarchar||0|0|False|Tags applied to the order|
 
 ## [](#Indexes) Indexes _`1`_
 
-|Key|Name|Columns|Unique|Type|Description
-|---|---|---|---|---|---
-|[![Primary Key PK_OrderID](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_OrderID](../Images/Cluster.svg)](#Indexes)|PK_OrderID|id|True||Order ID Unique Key|
+|Key|Name|Columns|Unique|
+|:---:|---|---|---|
+||IDX_Orders_customer_id|customer_id|False|
+||IDX_Orders_processed_at|processed_at|False|
+|[![Primary Key PK_OrderID](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_OrderID](../Images/Cluster.svg)](#Indexes)|PK_OrderID|id|True|
 
 ## [](#SqlScript) SQL Script
 
 ```SQL
 CREATE TABLE dbo.Orders (
   id bigint NOT NULL,
-  order_date datetime NOT NULL,
+  created_at datetime NOT NULL,
+  updated_at datetime NOT NULL,
+  processed_at datetime NOT NULL,
   number bigint NOT NULL,
-  total_price float NOT NULL,
-  subtotal_price float NOT NULL,
   total_weight float NOT NULL,
-  total_tax float NOT NULL,
-  total_discounts float NULL,
-  total_line_items_price float NULL,
-  name nvarchar(255) NOT NULL,
-  total_price_usd float NOT NULL,
-  order_number bigint NULL,
+  name nvarchar(50) NOT NULL,
+  order_number bigint NOT NULL,
   processing_method nvarchar(255) NULL,
-  source_name nvarchar(255) NULL,
-  fulfillment_status nvarchar(255) NULL,
-  payment_gateway_names nvarchar(max) NULL,
+  source_name nvarchar(50) NULL,
+  fulfillment_status nvarchar(50) NULL,
+  payment_gateway_names nvarchar(255) NULL,
   email nvarchar(255) NULL,
-  updated_at datetime NULL,
-  financial_status nvarchar(255) NULL,
+  financial_status nvarchar(50) NULL,
   customer_id bigint NULL,
   tags nvarchar(max) NULL,
   CONSTRAINT PK_OrderID PRIMARY KEY CLUSTERED (id)
 )
 ON [PRIMARY]
 TEXTIMAGE_ON [PRIMARY]
+GO
+
+CREATE INDEX IDX_Orders_customer_id
+  ON dbo.Orders (customer_id)
+  ON [PRIMARY]
+GO
+
+CREATE INDEX IDX_Orders_processed_at
+  ON dbo.Orders (processed_at)
+  ON [PRIMARY]
 GO
 ```
 

@@ -1,9 +1,15 @@
+"""pyshopify data types and columns."""
 from typing import Optional, List, Dict, Union
 
 api_fields: List[str] = [
     'id',
     'created_at',
+    'processed_at',
     'number',
+    'current_total_discounts',
+    'current_total_price',
+    'current_subtotal_price',
+    'current_total_tax',
     'total_price',
     'subtotal_price',
     'total_weight',
@@ -31,30 +37,28 @@ api_fields: List[str] = [
     'referring_site',
     'source_name',
     'source_identifier',
-    'source_url'
+    'source_url',
+    'total_shipping_price_set',
+    'taxes_included'
 ]
 
 
 class PandasWorkVars:
+    """Table columns and types for DataFrames."""
     order_cols: List[str] = [
         'id',
         'created_at',
+        'updated_at',
+        'processed_at',
         'number',
-        'total_price',
-        'subtotal_price',
         'total_weight',
-        'total_tax',
-        'total_discounts',
-        'total_line_items_price',
         'name',
-        'total_price_usd',
         'order_number',
         'processing_method',
         'source_name',
         'fulfillment_status',
         'payment_gateway_names',
         'email',
-        'updated_at',
         'financial_status',
         'customer_id',
         'tags',
@@ -62,35 +66,35 @@ class PandasWorkVars:
 
     order_dtypes: Dict[str, str] = {
         'number': 'int64',
-        'total_price': 'float64',
-        'subtotal_price': 'float64',
         'total_weight': 'float64',
-        'total_tax': 'float64',
-        'total_discounts': 'float64',
-        'total_line_items_price': 'float64',
-        'name': 'object',
-        'total_price_usd': 'float64',
+        'name': 'string',
         'order_number': 'int64',
-        'processing_method': 'object',
-        'source_name': 'object',
-        'fulfillment_status': 'object',
-        'email': 'object',
+        'processing_method': 'string',
+        'source_name': 'string',
+        'fulfillment_status': 'string',
+        'email': 'string',
         'customer_id': 'Int64',
-        'tags': 'object',
+        'tags': 'string',
     }
     refund_cols: List[str] = [
-        'created_at',
         'id',
-        'order_id'
+        'created_at',
+        'processed_at',
+        'order_date',
+        'order_id',
+        'note'
     ]
 
     refund_dtypes: Dict[str, str] = {
         'id': 'int64',
-        'order_id': 'int64'
+        'order_id': 'int64',
+        'note': 'string'
     }
 
     refund_li_cols: List[str] = [
         'id',
+        'order_date',
+        'processed_at',
         'refund_id',
         'order_id',
         'line_item_id',
@@ -113,6 +117,8 @@ class PandasWorkVars:
 
     adjustment_cols: List[str] = [
         'id',
+        'processed_at',
+        'order_date',
         'refund_id',
         'order_id',
         'amount',
@@ -127,24 +133,24 @@ class PandasWorkVars:
         'order_id': 'int64',
         'amount': 'float64',
         'tax_amount': 'float64',
-        'kind': 'object',
-        'reason': 'object'
+        'kind': 'string',
+        'reason': 'string'
     }
 
     line_item_cols: List[str] = [
         'id',
+        'processed_at',
         'order_id',
         'variant_id',
         'quantity',
         'price',
-        'order_date',
         'name',
         'product_id',
         'sku',
         'title',
         'total_discount',
         'variant_title',
-
+        'fulfillment_status'
     ]
 
     line_item_dtypes: Dict[str, str] = {
@@ -153,12 +159,13 @@ class PandasWorkVars:
         'variant_id': 'int64',
         'quantity': 'int32',
         'price': 'float64',
-        'name': 'object',
+        'name': 'string',
         'product_id': 'int64',
-        'sku': 'object',
-        'title': 'object',
+        'sku': 'string',
+        'title': 'string',
         'total_discount': 'float64',
-        'variant_title': 'object'
+        'variant_title': 'string',
+        'fulfillment_status': 'string'
     }
 
     transaction_cols: List[str] = [
@@ -173,7 +180,7 @@ class PandasWorkVars:
     transaction_dtypes: Dict[str, str] = {
         'id': 'int64',
         'source_order_id': 'int64',
-        'type': 'object',
+        'type': 'string',
         'fee': 'float64',
         'amount': 'float64'
     }
@@ -181,13 +188,13 @@ class PandasWorkVars:
     customer_dtypes: Dict[str, str] = {
         'id': "Int64",
         'last_order_id': "Int64",
-        'tags': "object",
-        'country': "object",
-        'zip': "object",
-        'province': "object",
-        'city': "object",
+        'tags': "string",
+        'country': "string",
+        'zip': "string",
+        'province': "string",
+        'city': "string",
         'orders_count': "Int32",
-        'email': "object",
+        'email': "string",
         'total_spent': "float64",
     }
 
@@ -215,7 +222,7 @@ class PandasWorkVars:
 
     discount_app_cols: List[str] = [
         'order_id',
-        'order_date',
+        'processed_at',
         'type',
         'code',
         'title',
@@ -228,25 +235,21 @@ class PandasWorkVars:
     ]
 
     discount_app_dtypes: Dict[str, str] = {
+        'id': 'str',
         'order_id': 'int64',
-        'type': 'object',
-        'title': 'object',
+        'type': 'string',
+        'title': 'string',
         'value': 'float64',
-        'value_type': 'object',
-        'allocation_method': 'object',
-        'target_selection': 'object',
-        'target_type': 'object',
-        'code': 'object'
-    }
-
-    discount_app_map: Dict[str, str] = {
-        'orders_id': 'order_id',
-        'orders_created_at': 'order_date'
+        'value_type': 'string',
+        'allocation_method': 'string',
+        'target_selection': 'string',
+        'target_type': 'string',
+        'code': 'string'
     }
 
     discount_code_cols: List[str] = [
         'order_id',
-        'created_at',
+        'processed_at',
         'code',
         'amount',
         'type'
@@ -259,25 +262,19 @@ class PandasWorkVars:
         'amount': 'float64'
     }
 
-    discount_code_map: Dict[str, str] = {
-        'orders_id': 'order_id',
-        'orders_created_at': 'order_date'
-    }
-
     ship_li_cols: List[str] = [
         'id',
+        'order_id',
+        'processed_at',
         'carrier_identifier',
         'code',
         'delivery_category',
         'discounted_price',
         'phone',
         'price',
-        'discounted_price',
-        'requested_fulfillment_id',
+        'requested_fulfillment_service_id',
         'source',
         'title',
-        'orders.id',
-        'orders.created_at'
     ]
 
     ship_li_dtypes: Dict[str, str] = {
@@ -285,42 +282,65 @@ class PandasWorkVars:
         'carrier_identifier': 'string',
         'code': 'string',
         'delivery_category': 'string',
-        'ship_discount_price': 'float64',
+        'discounted_price': 'float64',
         'phone': 'string',
-        'ship_price': 'float64',
-        'requested_fulfillment_id': 'string',
+        'price': 'float64',
+        'requested_fulfillment_service_id': 'string',
         'source': 'string',
         'title': 'string',
         'order_id': 'int64',
     }
 
-    ship_li_map: Dict[str, str] = {
-        'orders.id': 'order_id',
-        'orders.created_at': 'order_date',
-        'price': 'ship_price',
-        'discounted_price': 'ship_discount_price'
-    }
     order_attr_cols: List[str] = [
-            'id',
-            'created_at',
+            'order_id',
+            'processed_at',
             'landing_site',
             'referring_site',
             'source_name',
             'source_identifier',
             'source_url'
         ]
-    order_attr_map: Dict[str, str] = {
-        'id': 'order_id',
-        'created_at': 'order_date'
-    }
     order_attr_dtypes: Dict[str, str] = {
         'order_id': 'int64',
-        'landing_site': 'object',
-        'referring_site': 'object',
-        'source_name': 'object',
-        'source_identifier': 'object',
-        'source_url': 'object',
+        'landing_site': 'string',
+        'referring_site': 'string',
+        'source_name': 'string',
+        'source_identifier': 'string',
+        'source_url': 'string',
     }
+
+    order_prices_cols: List[str] = [
+        'order_id',
+        'processed_at',
+        'updated_at',
+        'current_total_discounts',
+        'current_subtotal_price',
+        'current_total_price',
+        'current_total_tax',
+        'subtotal_price',
+        'total_discounts',
+        'total_line_items_price',
+        'total_price',
+        'total_tax',
+        'total_shipping_price',
+        'taxes_included'
+    ]
+
+    order_prices_dtypes: Dict[str, str] = {
+        'order_id': 'int64',
+        'current_total_discounts': 'float64',
+        'current_subtotal_price': 'float64',
+        'current_total_price': 'float64',
+        'current_total_tax': 'float64',
+        'subtotal_price': 'float64',
+        'total_discounts': 'float64',
+        'total_line_items_price': 'float64',
+        'total_price': 'float64',
+        'total_tax': 'float64',
+        'total_shipping_price': 'float64',
+        'taxes_included': 'boolean'
+    }
+
     products_cols: List[str] = [
         'id',
         'title',
@@ -394,8 +414,6 @@ class PandasWorkVars:
         'option1': 'string',
         'option2': 'string',
         'option3': 'string',
-        'created_at': 'string',
-        'updated_at': 'string',
         'barcode': 'string',
         'grams': 'Int64',
         'image_id': 'Int64',
@@ -423,6 +441,46 @@ class PandasWorkVars:
         'values': 'string'
     }
 
+    locations_cols: List[str] = [
+        "id",
+        "name",
+        "updated_at",
+        "address1",
+        "address2",
+        "city",
+        "province_code",
+        "country_code",
+        "zip",
+        "active",
+    ]
+
+    locations_dtypes: Dict[str, str] = {
+        "id": "int64",
+        "name": "string",
+        "address1": "string",
+        "address2": "string",
+        "city": "string",
+        "province_code": "string",
+        "country_code": "string",
+        "zip": "string",
+        "active": "bool",
+    }
+
+    levels_cols: List[str] = [
+        'inventory_item_id',
+        'location_id',
+        'available',
+        'updated_at',
+        'admin_graphql_api_id'
+    ]
+
+    levels_dtypes: Dict[str, str] = {
+        'inventory_item_id': 'int64',
+        'location_id': 'int64',
+        'available': 'Int64',
+        'admin_graphql_api_id': 'string'
+    }
+
 
 def merge_str(db: str, schema: str, tbl_name: str, col_names: List[str],
               merge_cols: List[str], match_on: Optional[list] = None,
@@ -432,16 +490,11 @@ def merge_str(db: str, schema: str, tbl_name: str, col_names: List[str],
     merge_on = " AND ".join(f"TARGET.[{col}] = SOURCE.[{col}]"
                             for col in merge_cols)
     if update is True:
+        match = ""
         if match_on is not None:
             match = " AND " + " AND".join(f"TARGET.[{col}] <> SOURCE.[{col}]"
                                           for col in match_on)
-        else:
-            match = ""
-        if isinstance(match_on, list):
-            update_cols = [col for col in col_names if col not in set(
-                    merge_cols + match_on)]
-        else:
-            update_cols = [col for col in col_names if col not in merge_cols]
+        update_cols = [col for col in col_names if col not in merge_cols]
         update_list = ", ".join(f"TARGET.[{col}] = SOURCE.[{col}]"
                                 for col in update_cols)
         return f"""
@@ -471,9 +524,9 @@ MergeDict: Dict[str, Dict[str, Union[list, str, bool]]] = {
         "update": True
     },
     'Customers': {
-            "match_on": ["updated_at"],
-            "merge_cols": ["id"],
-            "update": True
+        "match_on": ["updated_at"],
+        "merge_cols": ["id"],
+        "update": True
     },
     "Refunds": {
         "merge_cols": ["id"],
@@ -519,6 +572,18 @@ MergeDict: Dict[str, Dict[str, Union[list, str, bool]]] = {
     },
     "ProductOptions": {
         "merge_cols": ["id"],
+        "update": True
+    },
+    "OrderPrices": {
+        "merge_cols": ["order_id"],
+        "update": True
+    },
+    "InventoryLocations": {
+        "merge_cols": ["id"],
+        "update": True
+    },
+    "InventoryLevels": {
+        "merge_cols": ["location_id", "inventory_item_id"],
         "update": True
     }
 }
