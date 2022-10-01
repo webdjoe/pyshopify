@@ -4,6 +4,7 @@ import click
 from pyshopify.runner import ShopifyApp
 from pyshopify.sql import DBFactory
 
+
 @click.command()
 @click.option('--orders', is_flag=True, help='Get orders data')
 @click.option('--customers', is_flag=True, help='Get customers data')
