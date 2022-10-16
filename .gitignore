@@ -83,3 +83,7 @@ dmypy.json
 .pytype/
 cython_debug/
 run.bat
+*.bak
+.vscode/
+.vscode/settings.json
+*.json

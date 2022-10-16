@@ -1,0 +1,21 @@
+services:
+    mysql-db:
+        build:
+            context: ..
+            dockerfile: docker-mysql/Dockerfile
+        container_name: shop_mysql
+        hostname: shop_mysql
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_TCP_PORT: 3306
+            MYSQL_ROOT_PASSWORD: StrongestPassword1
+            DB_NAME: shop_sql
+            DB_USER: shop_user
+            DB_PASS: StrongerPassword1
+            STARTING_DATE: "2019-01-01"
+            CONFIG_FILE: "/root/config.ini"
+        volumes:
+            - "../csv_export:/root/csv_export"
+            - "../data:/var/lib/mysql"
+            - "../config.ini:/root/config.ini"

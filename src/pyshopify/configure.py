@@ -22,6 +22,14 @@ SQL_ENV_MAP = {
 
 
 class Config:
+    """Configuration Class for pyshopify using configparser.
+
+    The parser is initialized with a default configuration and
+    then loads a configuration file if it exists, followed by a
+    configuration dictionary if supplied.
+
+    The parser object is available as self.parser.
+    """
     def __init__(self, conf: str = ''):
         default_conf: Mapping[str, Mapping] = {
             'shopify': {
@@ -36,10 +44,7 @@ class Config:
             'sql': {
                 'windows_auth': False,
                 'db': 'shop_rest',
-                'schema': 'dbo',
-                'server': 'localhost',
-                'port': 1433,
-                'db_user': 'shop_user',
+                'server': 'localhost'
             },
             'csv': {
                 'filepath': 'csv_export',
@@ -71,16 +76,20 @@ class Config:
 
     @property
     def shopify(self) -> SectionProxy:
+        """Shopify Configuration Section."""
         return self.parser['shopify']
 
     @property
     def time_zone(self) -> str:
+        """Time zone from Shopify configuration."""
         return self.shopify['timezone']
 
     @property
     def sql_conf(self) -> SectionProxy:
+        """SQL Configuration Section."""
         return self.parser['sql']
 
     @property
     def csv_conf(self) -> SectionProxy:
+        """CSV Configuration Section."""
         return self.parser['csv']
