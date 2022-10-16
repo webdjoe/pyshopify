@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.Customers
+# ![logo](../Images/table.svg) customers
 
-[Start](../start.md)>dbo.Customers
+[Start](../start.md)>customers
 
 ## [](#Description) Description
 
@@ -28,26 +28,4 @@
 |Key|Name|Columns|Unique|
 |---|---|---|---|
 |[![Primary Key PK_ordercustid](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ordercustid](../Images/cluster.svg)](#Indexes)|PK_customers_id|id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.Customers (
-  id bigint NOT NULL,
-  updated_at datetime NOT NULL,
-  created_at datetime NOT NULL,
-  email nvarchar(255) NULL,
-  last_order_id bigint NULL,
-  orders_count int NOT NULL,
-  total_spent money NOT NULL,
-  tags nvarchar(max) NULL,
-  city nvarchar(255) NULL,
-  province nvarchar(255) NULL,
-  country nvarchar(255) NULL,
-  zip nvarchar(255) NULL,
-  CONSTRAINT PK_Customers_id PRIMARY KEY CLUSTERED (id)
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-```
-
 ___

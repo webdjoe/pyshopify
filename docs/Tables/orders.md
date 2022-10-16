@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.Orders
+# ![logo](../Images/table.svg) orders
 
-[Start](../start.md)>dbo.Orders
+[Start](../start.md)>orders
 
 ## [](#Description) Description
 
@@ -34,42 +34,5 @@
 ||IDX_Orders_customer_id|customer_id|False|
 ||IDX_Orders_processed_at|processed_at|False|
 |[![Primary Key PK_OrderID](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_OrderID](../Images/Cluster.svg)](#Indexes)|PK_OrderID|id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.Orders (
-  id bigint NOT NULL,
-  created_at datetime NOT NULL,
-  updated_at datetime NOT NULL,
-  processed_at datetime NOT NULL,
-  number bigint NOT NULL,
-  total_weight float NOT NULL,
-  name nvarchar(50) NOT NULL,
-  order_number bigint NOT NULL,
-  processing_method nvarchar(255) NULL,
-  source_name nvarchar(50) NULL,
-  fulfillment_status nvarchar(50) NULL,
-  payment_gateway_names nvarchar(255) NULL,
-  email nvarchar(255) NULL,
-  financial_status nvarchar(50) NULL,
-  customer_id bigint NULL,
-  tags nvarchar(max) NULL,
-  CONSTRAINT PK_OrderID PRIMARY KEY CLUSTERED (id)
-)
-ON [PRIMARY]
-TEXTIMAGE_ON [PRIMARY]
-GO
-
-CREATE INDEX IDX_Orders_customer_id
-  ON dbo.Orders (customer_id)
-  ON [PRIMARY]
-GO
-
-CREATE INDEX IDX_Orders_processed_at
-  ON dbo.Orders (processed_at)
-  ON [PRIMARY]
-GO
-```
 
 ___

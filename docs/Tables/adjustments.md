@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.Adjustments
+# ![logo](../Images/table.svg) adjustments
 
-[Start](../start.md)>dbo.Adjustments
+[Start](../start.md)>adjustments
 
 ## [](#Description) Description
 
@@ -26,24 +26,4 @@
 |Key|Name|Columns|Unique|
 |---|---|---|---|
 |[![Primary Key PK_adj_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_adj_id](../Images/cluster.svg)](#Indexes)|PK_adj_id|id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.Adjustments (
-  id bigint NOT NULL,
-  refund_id bigint NOT NULL,
-  processed_at datetime NOT NULL,
-  order_date datetime NOT NULL,
-  order_id bigint NOT NULL,
-  amount money NOT NULL,
-  tax_amount money NOT NULL,
-  kind nvarchar(255) NULL,
-  reason nvarchar(255) NULL,
-  CONSTRAINT PK_adj_id PRIMARY KEY CLUSTERED (id)
-)
-ON [PRIMARY]
-GO
-```
-
 ___

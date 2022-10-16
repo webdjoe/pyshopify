@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.Products
+# ![logo](../Images/table.svg) variants
 
-[Start](../start.md)>dbo.Products
+[Start](../start.md)>variants
 
 ## [](#Description) Description
 
@@ -41,40 +41,5 @@
 |Key|Name|Columns|Unique|
 |:---:|---|---|---|
 |[![Primary Key PK_Variants](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_Variants](../Images/Cluster.svg)](#Indexes)|PK_Variants|id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.Variants (
-  id bigint NOT NULL,
-  product_id bigint NOT NULL,
-  title nvarchar(255) NULL,
-  price money NULL,
-  sku nvarchar(255) NULL,
-  position int NULL,
-  inventory_policy nvarchar(255) NULL,
-  compare_at_price money NULL,
-  fulfillment_service nvarchar(255) NULL,
-  inventory_management nvarchar(255) NULL,
-  option1 nvarchar(255) NULL,
-  option2 nvarchar(255) NULL,
-  option3 nvarchar(255) NULL,
-  created_at datetime NOT NULL,
-  updated_at datetime NOT NULL,
-  barcode bigint NULL,
-  grams int NULL,
-  image_id bigint NULL,
-  weight float NULL,
-  weight_unit nvarchar(50) NULL,
-  inventory_item_id bigint NULL,
-  inventory_quantity int NULL,
-  old_inventory_quantity int NULL,
-  requires_shipping bit NULL,
-  admin_graphql_api_id nvarchar(255) NULL,
-  CONSTRAINT PK_Variants PRIMARY KEY CLUSTERED (id)
-)
-ON [PRIMARY]
-GO
-```
 
 ___

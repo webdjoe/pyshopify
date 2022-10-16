@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.RefundLineItem
+# ![logo](../Images/table.svg) refund_line_item
 
-[Start](../start.md)>dbo.RefundLineItem
+[Start](../start.md)>refund_line_item
 
 ## [](#Description) Description
 
@@ -28,35 +28,5 @@
 ||IDX_RefundLineItem_order_id|order_id|False|
 ||IDX_RefundLineItem_processed_at|processed_at|False|
 |[![Primary Key PK_refundlineitem_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_refundlineitem_id](../Images/Cluster.svg)](#Indexes)|PK_refundlineitem_id|id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.RefundLineItem (
-  id bigint NOT NULL,
-  refund_id bigint NOT NULL,
-  processed_at datetime NOT NULL,
-  order_date datetime NOT NULL,
-  order_id bigint NOT NULL,
-  line_item_id bigint NOT NULL,
-  variant_id bigint NOT NULL,
-  quantity int NOT NULL,
-  subtotal money NOT NULL,
-  total_tax money NOT NULL,
-  CONSTRAINT PK_refundlineitem_id PRIMARY KEY CLUSTERED (id)
-)
-ON [PRIMARY]
-GO
-
-CREATE INDEX IDX_RefundLineItem_order_id
-  ON dbo.RefundLineItem (order_id)
-  ON [PRIMARY]
-GO
-
-CREATE INDEX IDX_RefundLineItem_processed_at
-  ON dbo.RefundLineItem (processed_at)
-  ON [PRIMARY]
-GO
-```
 
 ___

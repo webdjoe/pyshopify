@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.DiscountApps
+# ![logo](../Images/table.svg) discount_apps
 
-[Start](../start.md)>dbo.DiscountApps
+[Start](../start.md)>discount_apps
 
 ## [](#Description) Description
 
@@ -29,33 +29,5 @@
 |:---:|---|---|---|
 ||IDX_DiscountApps_order_id|order_id|False|
 |[![Primary Key PK_DiscountApps](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_DiscountApps](../Images/Cluster.svg)](#Indexes)|PK_DiscountApps|id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.DiscountApps (
-  id bigint NOT NULL,
-  order_id bigint NOT NULL,
-  processed_at datetime NOT NULL,
-  type nvarchar(255) NOT NULL,
-  title nvarchar(255) NULL,
-  description nvarchar(255) NULL,
-  value money NOT NULL,
-  value_type nvarchar(255) NULL,
-  allocation_method nvarchar(255) NULL,
-  target_selection nvarchar(255) NULL,
-  target_type nvarchar(255) NULL,
-  code nvarchar(255) NULL,
-  CONSTRAINT PK_DiscountApps PRIMARY KEY CLUSTERED (id)
-)
-ON [PRIMARY]
-GO
-
-CREATE INDEX IDX_DiscountApps_order_id
-  ON dbo.DiscountApps (order_id)
-  ON [PRIMARY]
-GO
-
-```
 
 ___

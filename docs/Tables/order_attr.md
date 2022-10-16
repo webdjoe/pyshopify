@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.OrderAttr
+# ![logo](../Images/table.svg) order_attr
 
-[Start](../start.md)>dbo.OrderAttr
+[Start](../start.md)> order_attr
 
 ## [](#Description) Description
 
@@ -24,28 +24,5 @@
 |:---:|---|---|---|
 ||IDX_OrderAttr_processed_at|processed_at|False|
 |[![Primary Key PK_OrderAttr_order_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_OrderAttr_order_id](../Images/Cluster.svg)](#Indexes)|PK_OrderAttr_order_id|order_id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.OrderAttr (
-  order_id bigint NOT NULL,
-  processed_at datetime NOT NULL,
-  landing_site nvarchar(max) NULL,
-  referring_site nvarchar(max) NULL,
-  source_name nvarchar(max) NULL,
-  source_identifier nvarchar(max) NULL,
-  source_url nvarchar(max) NULL,
-  CONSTRAINT PK_OrderAttr_order_id PRIMARY KEY CLUSTERED (order_id)
-)
-ON [PRIMARY]
-TEXTIMAGE_ON [PRIMARY]
-GO
-
-CREATE INDEX IDX_OrderAttr_processed_at
-  ON dbo.OrderAttr (processed_at)
-  ON [PRIMARY]
-GO
-```
 
 ___

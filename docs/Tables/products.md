@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.Products
+# ![logo](../Images/table.svg) products
 
-[Start](../start.md)>dbo.Products
+[Start](../start.md)>products
 
 ## [](#Description) Description
 
@@ -31,31 +31,5 @@
 |Key|Name|Columns|Unique|
 |---|---|---|---|
 |[![Primary Key PK_products](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_products](../Images/cluster.svg)](#Indexes)|PK_products_id|id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.Products (
-  id bigint NOT NULL,
-  title nvarchar(255) NULL,
-  body_html nvarchar(max) NULL,
-  vendor nvarchar(255) NULL,
-  product_type nvarchar(255) NULL,
-  created_at datetime NOT NULL,
-  handle nvarchar(255) NULL,
-  updated_at datetime NOT NULL,
-  published_at datetime NULL,
-  template_suffix nvarchar(255) NULL,
-  status nvarchar(255) NULL,
-  published_scope nvarchar(255) NULL,
-  tags nvarchar(max) NULL,
-  admin_graphql_api_id nvarchar(255) NULL,
-  image_src nvarchar(255) NULL,
-  CONSTRAINT PK_products PRIMARY KEY CLUSTERED (id)
-)
-ON [PRIMARY]
-TEXTIMAGE_ON [PRIMARY]
-GO
-```
 
 ___

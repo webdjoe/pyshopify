@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.OrderPrices
+# ![logo](../Images/table.svg) order_prices
 
-[Start](../start.md)>dbo.OrderPrices
+[Start](../start.md)>order_prices
 
 ## [](#Description) Description
 
@@ -31,34 +31,5 @@
 |:---:|---|---|---|
 |[![Primary Key PK_OrderPrices_order_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_OrderPrices_order_id](../Images/Cluster.svg)](#Indexes)|PK_OrderPrices_order_id|order_id|True|
 ||UK_OrderPrices|processed_at|False|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.OrderPrices (
-  order_id bigint NOT NULL,
-  processed_at datetime NOT NULL,
-  updated_at datetime NOT NULL,
-  current_total_discounts money NOT NULL,
-  current_total_price money NOT NULL,
-  current_subtotal_price money NOT NULL,
-  current_total_tax money NOT NULL,
-  subtotal_price money NOT NULL,
-  total_discounts money NOT NULL,
-  total_line_items_price money NOT NULL,
-  total_price money NOT NULL,
-  total_tax money NOT NULL,
-  total_shipping_price money NOT NULL,
-  taxes_included bit NOT NULL,
-  CONSTRAINT PK_OrderPrices_order_id PRIMARY KEY CLUSTERED (order_id)
-)
-ON [PRIMARY]
-GO
-
-CREATE INDEX UK_OrderPrices
-  ON dbo.OrderPrices (processed_at)
-  ON [PRIMARY]
-GO
-```
 
 ___

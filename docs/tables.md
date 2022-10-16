@@ -4,30 +4,30 @@
 
 | Name                                               | Description                                     |
 |----------------------------------------------------|-------------------------------------------------|
-| [dbo.Customers](Tables/dbo.Customers.md)           | Customer details                                |
+| [customers](Tables/customers.md)           | Customer details                                |
 
 ## ![Table](Images/table.svg) **[Products & Inventory Tables](Tables/Tables.md)**
 
 | Name                                               | Description                                     |
 |----------------------------------------------------|-------------------------------------------------|
-| [dbo.Products](Tables/dbo.Products.md)           | Product & Listing Data                                |
-| [dbo.Variants](Tables/dbo.Variants.md)           | Product Variant details & Inventory                                |
-| [dbo.ProductOptions](Tables/dbo.ProductOptions.md)           | Product & variant options configurations                          |
-|[dbo.InventoryLevels](Tables/dbo.InventoryLevels.md)|Inventory Levels for items at each inventory location|
-|[dbo.InventoryLocations](Tables/dbo.InventoryLocations.md)|Inventory locations |
+| [products](Tables/products.md)           | Product & Listing Data                                |
+| [variants](Tables/variants.md)           | Product Variant details & Inventory                                |
+| [product_options](Tables/product_options.md)           | Product & variant options configurations                          |
+|[inventory_levels](Tables/inventory_levels.md)|Inventory Levels for items at each inventory location|
+|[inventory_locations](Tables/inventory_locations.md)|Inventory locations |
 
 ## ![Table](Images/table.svg) [Orders Tables](Tables/Tables.md)
 
 | Name                                               | Description                                     |
 |----------------------------------------------------|-------------------------------------------------|
-| [dbo.Orders](Tables/dbo.Orders.md)                 | Order Details                                   |
-| [dbo.OrderAttr](Tables/dbo.OrderAttr.md)           | Order source, campaign & attribution details    |
-|[dbo.OrderPrices](Tables/dbo.OrderPrices.md)|Amounts charged for order|
-| [dbo.Adjustments](Tables/dbo.Adjustments.md)       | Adjustments on order for refunding shipping and refund discrepancies                       |
-| [dbo.DateDimension](Tables/dbo.DateDimension.md)   | Date Dimension Table for Analysis               |
-| [dbo.DiscountApps](Tables/dbo.DiscountApps.md)     | Discount Applications for Each Order            |
-| [dbo.DiscountCodes](Tables/dbo.DiscountCodes.md)   | Discount Codes In Use for Each Order            |
-| [dbo.LineItems](Tables/dbo.LineItems.md)           | Line Items with Units Sold for Orders           |
-| [dbo.RefundLineItem](Tables/dbo.RefundLineItem.md) | Refunded Units                                  |
-| [dbo.Refunds](Tables/dbo.Refunds.md)               | Order Refunds                                   |
-| [dbo.ShipLines](Tables/dbo.ShipLines.md)           | Order shipping lines pricings method & discount |
+| [orders](Tables/orders.md)                 | Order Details                                   |
+| [order_attr](Tables/order_attr.md)           | Order source, campaign & attribution details    |
+|[order_prices](Tables/order_prices.md)|Amounts charged for order|
+| [adjustments](Tables/adjustments.md)       | Adjustments on order for refunding shipping and refund discrepancies                       |
+| [date_dimension](Tables/date_dimension.md)   | Date Dimension Table for Analysis               |
+| [discount_apps](Tables/discount_apps.md)     | Discount Applications for Each Order            |
+| [discount_codes](Tables/discount_codes.md)   | Discount Codes In Use for Each Order            |
+| [line_items](Tables/line_items.md)           | Line Items with Units Sold for Orders           |
+| [refund_line_item](Tables/refund_line_item.md) | Refunded Units                                  |
+| [refunds](Tables/refunds.md)               | Order Refunds                                   |
+| [ship_lines](Tables/ship_lines.md)           | Order shipping lines pricings method & discount |

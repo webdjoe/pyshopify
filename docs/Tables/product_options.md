@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.Products
+# ![logo](../Images/table.svg) product_options
 
-[Start](../start.md)>dbo.Products
+[Start](../start.md)>product_options
 
 ## [](#Description) Description
 
@@ -21,19 +21,5 @@
 |Key|Name|Columns|Unique|
 |---|---|---|---|
 |[![Primary Key PK_ProductOptions}](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ProductOptions](../Images/cluster.svg)](#Indexes)|PK_ProductOptions|id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE shop_rest.dbo.ProductOptions (
-  id BIGINT NOT NULL
- ,product_id BIGINT NOT NULL
- ,name NVARCHAR(100) NULL
- ,position INT NULL
- ,[values] NVARCHAR(MAX) NULL
- ,CONSTRAINT PK_ProductOptions_id PRIMARY KEY CLUSTERED (id)
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-```
 
 ___

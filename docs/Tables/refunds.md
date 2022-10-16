@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.Refunds
+# ![logo](../Images/table.svg) refunds
 
-[Start](../start.md)>dbo.Refunds
+[Start](../start.md)>refunds
 
 ## [](#Description) Description
 
@@ -24,32 +24,5 @@
 ||IDX_Refunds_created_at|created_at|False|
 ||IDX_Refunds_order_id|order_id|False|
 |[![Primary Key PK_refund_id](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_refund_id](../Images/Cluster.svg)](#Indexes)|PK_refund_id|id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.Refunds (
-  id bigint NOT NULL,
-  created_at datetime NOT NULL,
-  processed_at datetime NOT NULL,
-  order_date datetime NOT NULL,
-  order_id bigint NOT NULL,
-  note nvarchar(max) NULL,
-  CONSTRAINT PK_refund_id PRIMARY KEY CLUSTERED (id)
-)
-ON [PRIMARY]
-TEXTIMAGE_ON [PRIMARY]
-GO
-
-CREATE INDEX IDX_Refunds_created_at
-  ON dbo.Refunds (created_at)
-  ON [PRIMARY]
-GO
-
-CREATE INDEX IDX_Refunds_order_id
-  ON dbo.Refunds (order_id)
-  ON [PRIMARY]
-GO
-```
 
 ___

@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.DiscountCodes
+# ![logo](../Images/table.svg) discount_codes
 
-[Start](../start.md)>dbo.DiscountCodes
+[Start](../start.md)>discount_codes
 
 ## [](#Description) Description
 
@@ -22,25 +22,5 @@
 |:---:|---|---|---|
 ||IDX_DiscountCodes_order_id|processed_at|False|
 |[![Primary Key PK_DiscountCodes](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_DiscountCodes](../Images/Cluster.svg)](#Indexes)|PK_DiscountCodes|order_id, code|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.DiscountCodes (
-  order_id bigint NOT NULL,
-  processed_at datetime NOT NULL,
-  code nvarchar(255) NOT NULL,
-  amount money NOT NULL,
-  type nvarchar(255) NOT NULL,
-  CONSTRAINT PK_DiscountCodes PRIMARY KEY CLUSTERED (order_id, code)
-)
-ON [PRIMARY]
-GO
-
-CREATE INDEX IDX_DiscountCodes_order_id
-  ON dbo.DiscountCodes (processed_at)
-  ON [PRIMARY]
-GO
-```
 
 ___

@@ -1,6 +1,6 @@
-# ![logo](../Images/table.svg) dbo.ShipLines
+# ![logo](../Images/table.svg) ship_lines
 
-[Start](../start.md)>dbo.ShipLines
+[Start](../start.md)> ship_lines
 
 ## [](#Description) Description
 
@@ -29,32 +29,5 @@
 |---|---|---|---|
 ||IDX_ShipLines|order_id, processed_at|False|
 |[![Primary Key PK_ShipLines](../Images/primarykey.svg)](#Indexes)[![Cluster Key PK_ShipLines](../Images/Cluster.svg)](#Indexes)|PK_ShipLines|id|True|
-
-## [](#SqlScript) SQL Script
-
-```SQL
-CREATE TABLE dbo.ShipLines (
-  id bigint NOT NULL,
-  processed_at datetime NOT NULL,
-  order_id bigint NOT NULL,
-  carrier_identifier nvarchar(255) NULL,
-  code nvarchar(255) NULL,
-  delivery_category nvarchar(255) NULL,
-  discounted_price money NOT NULL,
-  price money NOT NULL,
-  phone nvarchar(255) NULL,
-  requested_fulfillment_service_id nvarchar(255) NULL,
-  source nvarchar(255) NULL,
-  title nvarchar(255) NULL,
-  CONSTRAINT PK_ShipLines PRIMARY KEY CLUSTERED (id)
-)
-ON [PRIMARY]
-GO
-
-CREATE INDEX IDX_ShipLines
-  ON dbo.ShipLines (order_id, processed_at)
-  ON [PRIMARY]
-GO
-```
 
 ___
