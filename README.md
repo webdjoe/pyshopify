@@ -62,7 +62,7 @@ The following is a brief summary of the data being returned. The keys of the ret
 
 | Key/Table                                           | Description                                                                               |
 |-----------------------------------------------------|-------------------------------------------------------------------------------------------|
-| [orders](docs/Tables/Orders.md)                 | Order ID's, date, pricing details, fulfilment status, financial status                    |
+| [orders](docs/Tables/orders.md)                 | Order ID's, date, pricing details, fulfilment status, financial status                    |
 | [order_attr](docs/Tables/order_attr.md)           | Attribution details of each order - landing page, source url, referral url, campaign      |
 | [order_prices](docs/Tables/order_prices.md)           | Prices, discounts and charges for each order.      |
 | [line_items](docs/Tables/line_items.md)           | Order line items with order ID, date, quantity, product/variant ID's, sku, title, pricing |
