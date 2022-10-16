@@ -83,11 +83,11 @@ The following is a brief summary of the data being returned. The keys of the ret
 
 | Name                                               | Description                                     |
 |----------------------------------------------------|-------------------------------------------------|
-| [products](Tables/products.md)           | Product & Listing Data                                |
-| [variants](Tables/variants.md)           | Product Variant details & Inventory                                |
-| [product_options](Tables/product_options.md)           | Product & variant options configurations                          |
-|[inventory_levels](Tables/inventory_levels.md)|Inventory Levels for items at each inventory location|
-|[inventory_locations](Tables/inventory_locations.md)|Inventory locations |
+| [products](docs/Tables/products.md)           | Product & Listing Data                                |
+| [variants](docs/Tables/variants.md)           | Product Variant details & Inventory                                |
+| [product_options](docs/Tables/product_options.md)           | Product & variant options configurations                          |
+|[inventory_levels](docs/Tables/inventory_levels.md)|Inventory Levels for items at each inventory location|
+|[inventory_locations](docs/Tables/inventory_locations.md)|Inventory locations |
 
 ## Configuration
 
