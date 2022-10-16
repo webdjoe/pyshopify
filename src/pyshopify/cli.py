@@ -6,6 +6,7 @@ from pyshopify.sql import DBFactory
 
 
 @click.command()
+@click.option('--all', 'all_', is_flag=True, help='Run all tasks.')
 @click.option('--orders', is_flag=True, help='Get orders data')
 @click.option('--customers', is_flag=True, help='Get customers data')
 @click.option('--products', is_flag=True, help='Get products data')
@@ -24,7 +25,7 @@ from pyshopify.sql import DBFactory
 @click.option('--config',
               help=('Relative location of config.ini - defaults'
                     'to config.ini in currect directory'))
-def cli_runner(orders, products, customers,
+def cli_runner(all_, orders, products, customers,
                days, btw, sql_out, csv_out, csv_location, config):
     """Run Shopify App CLI.
 
@@ -65,69 +66,96 @@ def cli_runner(orders, products, customers,
     if csv_location:
         app.configuration.parser.set('csv', 'filepath', csv_location)
 
-    if customers:
+    if all_:
+        if csv_out:
+            app.write_all_to_csv()
+            click.echo('CSV Export Complete')
+        if sql_out:
+            app.write_all_to_sql()
+            click.echo("All data written to DB")
+    elif customers:
         app.customers_writer(write_csv=csv_out, write_sql=sql_out)
-    if orders:
+        click.echo('Customers data written')
+    elif orders:
         app.orders_writer(write_csv=csv_out, write_sql=sql_out)
-    if products:
-        app.products__inventory_writer(write_csv=csv_out, write_sql=sql_out)
+        click.echo('Orders data written')
+    elif products:
+        app.products_inventory_writer(write_csv=csv_out, write_sql=sql_out)
+        click.echo('Products data written')
 
 
 @click.command()
 @click.option('--db-tables/--tables-only', default=True,
               help='Specify whether to build  database or tables only')
-@click.option('-s', '--server', 'server', type=str,
+@click.option('-c', '--connector', type=str, required=True,
+              help="Connector + driver ex: mysql+pymysql")
+@click.option('-s', '--server', 'server', type=str, required=True,
               help="SQL Server name or IP address")
 @click.option('-p', '--port', 'port', type=int,
               help="SQL Server port")
-@click.option('--sa-user', 'sa_user', type=str,
+@click.option('-U', '--sa-user', 'sa_user', type=str, required=True,
               help="SQL Server SA user")
-@click.option('--sa-pass', 'sa_pass', type=str,
+@click.option('-W', '--sa-pass', 'sa_pass', type=str, required=True,
               help="SQL Server SA password")
-@click.option('--db-name', 'db_name', type=str,
-              help="DB to create or existing db")
-@click.option('--schema', 'schema', type=str, default='dbo',
-              help="Schema to create or existing schema")
+@click.option('-d', '--db-name', 'db_name', type=str, required=True,
+              help="DB to create or existing db to use")
+@click.option('--schema', 'schema', type=str,
+              help="MSSQL schema to create or existing schema to use")
 @click.option('--db-user', 'db_user', type=str,
               help="DB user to create")
 @click.option('--db-pass', 'db_pass', type=str,
               help="Created DB user password")
-@click.option('--driver', 'driver', type=str,
-              help="SQL Server ODBC driver")
+@click.option('--query', 'query', type=str,
+              help="Connection string Query, use comma separated list with key:value")
 @click.option('--date-start', 'date_start', type=str,
               help="Create DateDim table from starting date YYYY-MM-DD")
-def build_database(db_tables, server, port, sa_user, sa_pass,
-                   db_name, schema, db_user, db_pass, driver, date_start):
+def build_database(connector, db_tables, server, port, sa_user, sa_pass,
+                   db_name, schema, db_user, db_pass, query, date_start):
     """pyshopify database builder.
 
     Build on existing database with --tables-only
     New user can be created with --db-user and --db-pass
-    A new schema will be built if the --schema is specified
+    For MSSQL, --schema will be created if it does not exist
 
-    date_start will build a date dimension table starting at date_start.
+    specifying date_start will build a date dimension table starting at date_start.
 
     """
-    if not driver:
-        driver = 'ODBC Driver 17 for SQL Server'
-    db = DBFactory(server=server,
-                   port=port,
-                   db_name=db_name,
-                   sa_user=sa_user,
-                   sa_pass=sa_pass,
-                   schema=schema,
-                   driver=driver)
-    click.echo(str(db_tables))
-    click.echo(f"Creating database {db_name} on {server}")
-    click.echo(f"sa user: {sa_user}")
-    click.echo(f"sa pass: {sa_pass}")
-    click.echo(f"db user: {db_user}")
+    if (not db_user or not db_pass) and (db_user.strip() == '' or db_pass.strip() == ''):
+        db_user = None
+        db_pass = None
+    if connector.split('+')[0] == 'mssql':
+        if not query:
+            query = None
+        db = DBFactory(connector=connector,
+                       server=server,
+                       port=port,
+                       db_name=db_name,
+                       sa_user=sa_user,
+                       sa_pass=sa_pass,
+                       schema=schema,
+                       connection_query=query)
+    elif connector.split('+')[0] in ['mysql', 'mariadb']:
+        db = DBFactory(connector=connector,
+                       server=server,
+                       port=port,
+                       db_name=db_name,
+                       sa_user=sa_user,
+                       sa_pass=sa_pass)
+
     if db_tables:
+        click.echo('Creating pyshopify database and tables')
         db.create_db()
-    if db_user and db_pass:
+        click.echo(f'Database {db_name} created')
+    else:
+        click.echo("Creating pyshopify tables only")
+    if db_pass is not None and db_user is not None:
         db.create_user(db_user, db_pass)
+        click.echo(f'User {db_user} created')
     db.create_tables()
+    click.echo(f'Tables created in {db_name}')
     if date_start:
         db.create_date_dimension(date_start)
+        click.echo("Date Dimension created")
 
 
 if __name__ == "__main__":

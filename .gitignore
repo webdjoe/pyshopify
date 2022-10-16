@@ -86,3 +86,4 @@ run.bat
 *.bak
 .vscode/
 .vscode/settings.json
+*.json

@@ -1,9 +1,8 @@
-pyodbc
-SQLAlchemy
+SQLAlchemy>=1.4.0, <2.0
 click
 python-dateutil
 requests
+numpy
 pandas
-klaviyo
 setuptools
 tzdata

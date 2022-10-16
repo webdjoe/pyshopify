@@ -44,10 +44,7 @@ class Config:
             'sql': {
                 'windows_auth': False,
                 'db': 'shop_rest',
-                'schema': 'dbo',
-                'server': 'localhost',
-                'port': 1433,
-                'db_user': 'shop_user',
+                'server': 'localhost'
             },
             'csv': {
                 'filepath': 'csv_export',

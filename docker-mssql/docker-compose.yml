@@ -2,7 +2,9 @@ version: "3.9"
 
 services:
     sqlserver:
-        build: .
+        build:
+            context: ..
+            dockerfile: docker-mssql/Dockerfile
         container_name: shop_sql
         hostname: shop_sql
         ports:
@@ -18,6 +20,6 @@ services:
             STARTING_DATE: "2019-01-01"
             CONFIG_FILE: "/root/config.ini"
         volumes:
-            - "./csv_export:/root/csv_export"
-            - "./data:/var/opt/mssql"
-            - "./config.ini:/root/config.ini"
+            - "../csv_export:/root/csv_export"
+            - "../data:/var/opt/mssql"
+            - "../config.ini:/root/config.ini"

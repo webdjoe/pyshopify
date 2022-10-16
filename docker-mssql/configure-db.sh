@@ -12,11 +12,9 @@ do
     -Q "SET NOCOUNT ON; Select DB_ID('$SHOPIFY_DB_NAME')")
     if [[ "NULL" -eq "$shop" ]]; then
       echo "Creating Shopify DB"
-      /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -d master \
-      -v StartDate="$STARTING_DATE" -v DBName="$SHOPIFY_DB_NAME" \
-      -v SchemaName="$SHOPIFY_DB_SCHEMA" -v DBUser="$SHOPIFY_DB_USER" \
-      -v DBPassword="$SHOPIFY_DB_PASSWORD" \
-      -i /usr/scripts/shopify.sql
+      /root/venv/bin/shopify_db -c mssql+pyodbc -s localhost -p ${DB_PORT:-1433} \
+      -U sa -W "$SA_PASSWORD" -d "$SHOPIFY_DB_NAME" --schema "${SHOPIFY_DB_SCHEMA:-'dbo'}" \
+      --db-user "$SHOPIFY_DB_USER" --db-pass "$SHOPIFY_DB_PASSWORD"
       break
     else
       echo "Shopify DB already exists"

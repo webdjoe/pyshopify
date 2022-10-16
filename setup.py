@@ -30,9 +30,14 @@ setuptools.setup(
         'pandas>=1.2.4',
         'python-dateutil',
         'requests>=2.20',
-        'six',
-        'tzdata'
+        'tzdata',
+        'sqlalchemy>=1.4.1, <2.0',
     ],
+    extra_requires={
+        'pymysql': ['pymysql>=1.0.2'],
+        'mysqldb': ['mysqlclient>=2.0.3'],
+        'pyodbc': ['pyodbc>=4.0.30'],
+    },
     package_dir={'': 'src'},
     packages=find_packages('src', exclude=["test"]),
     python_requires=">=3.9",

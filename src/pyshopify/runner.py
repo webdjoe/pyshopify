@@ -2,7 +2,7 @@
 import sys
 import logging
 from datetime import timedelta, datetime as dt
-from typing import Tuple, List, Dict, Optional, Iterator, Any, Callable, Union
+from typing import Tuple, List, Dict, Optional, Iterator, Callable, Union
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from configparser import SectionProxy
 from dateutil import parser
@@ -14,9 +14,10 @@ from pyshopify.csv_out import csv_send
 from pyshopify.return_parse import (locations_parse, pandas_work,
                                     customers_work, products_work,
                                     inventory_levels_parse)
+from pyshopify.sql import DBWriter
 from pyshopify.vars import api_fields
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('pyshopify')
 logger.setLevel(logging.DEBUG)
 log = sys.stdout.write
 sql_works = False
@@ -36,12 +37,13 @@ class ShopifyApp:
         Examples
         --------
         >>> config_dict = {'shopify':
-        ...                   {'store_name': 'store_name',
+        ...                   {'store_name': 'store_name_in_admin_url',
         ...                    'api_key': 'api_key',
         ...                    'time_zone': 'time_zone',
         ...                    'api_version': '2022-07'},
         ...                'csv': {'filepath': 'output_dir'},
-        ...                'sql': {'database': 'database',
+        ...                'sql': {'connector': 'mssql+pyodbc',
+        ...                        'database': 'database',
         ...                        'db_user': 'user',
         ...                        'db_pass': 'password',
         ...                        'server': 'server',
@@ -60,16 +62,16 @@ class ShopifyApp:
         self.csv_config: SectionProxy = self.configuration.csv_conf
         self.shop_config: SectionProxy = self.configuration.shopify
         self.sql_config: SectionProxy = self.configuration.sql_conf
-
-        self.engine: Any = None
-        self.sql_merge: Optional[Callable] = None
         self.start_date, self.end_date = self.date_config()
         if not self.start_date or not self.end_date:
             raise ValueError("Error parsing dates")
-        self.__init_engine()
+        self.db_writer = DBWriter(self.sql_config)
 
     def update_config(self, config: Dict[str, Dict[str, str]]):
         """Pass configuration dictionary to update instance.
+
+        Any date period included here will override existing configuration.
+
         Arguments
         ---------
         config: Dict[str, dict]
@@ -108,17 +110,6 @@ class ShopifyApp:
         config = self.shop_config
         return (f"https://{config['store_name']}.myshopify.com/"
                 f"{config['api_path']}{config['api_version']}/{end_point}")
-
-    def __init_engine(self) -> bool:
-        """Initialize engine in instance."""
-        try:
-            from pyshopify.sql import sql_merge
-            from pyshopify.sql import get_engine
-            self.engine = get_engine(self.sql_config)
-            self.sql_merge = sql_merge
-            return True
-        except ImportError:
-            raise ImportError("No SQL Python Modules installed")
 
     def date_config(self) -> Tuple[str, str]:
         """Get dates from configuration."""
@@ -170,16 +161,16 @@ class ShopifyApp:
         Yields
         ------
         dict: dictionary of dataframes for orders enpoint:
-            >>> [('Orders', DataFrame),
-            ... ('Refunds', DataFrame),
-            ... ('LineItems', DataFrame),
-            ... ('RefundLineItem', DataFrame),
-            ... ('Adjustments', DataFrame),
-            ... ('DiscountApps', DataFrame),
-            ... ('DiscountCodes', DataFrame),
-            ... ('ShipLines', DataFrame),
-            ... ('OrderAttr', DataFrame),
-            ... ('OrderPrices', DataFrame)]
+            >>> [('orders', DataFrame),
+            ... ('refunds', DataFrame),
+            ... ('line_items', DataFrame),
+            ... ('refund_line_item', DataFrame),
+            ... ('adjustments', DataFrame),
+            ... ('discount_apps', DataFrame),
+            ... ('discount_codes', DataFrame),
+            ... ('ship_lines', DataFrame),
+            ... ('order_attr', DataFrame),
+            ... ('order_prices', DataFrame)]
 
         Examples
         --------
@@ -215,17 +206,17 @@ class ShopifyApp:
         -------
         Dict[str, DataFrame]: dict of dataframes for orders and customers:
         >>>  {'customers': Customers DataFrame,
-        ...   'Orders': Order DataFrame,
-        ...   'Refunds': Refund DataFrame,
-        ...   'LineItems': LineItems DataFrame,
-        ...   'RefundLineItem': RefundLineItem DataFrame,
-        ...   'Adjustments': Adjustment DataFrame,
-        ...   'Customers': Customers DataFrame,
-        ...   'DiscountApps': DiscountApps DataFrame,
-        ...   'DiscountCodes': DiscCode DataFrame,
-        ...   'ShipLines': Ship DataFrame,
-        ...   'OrderAttr': OrderAttr DataFrame},
-        ...   'OrderPrices': OrderPrices DataFrame},
+        ...   'orders': Order DataFrame,
+        ...   'refunds': Refund DataFrame,
+        ...   'line_items': line_items DataFrame,
+        ...   'refund_lineItem': refund_line_item DataFrame,
+        ...   'adjustments': Adjustment DataFrame,
+        ...   'customers': Customers DataFrame,
+        ...   'discount_apps': discount_apps DataFrame,
+        ...   'discount_codes': DiscCode DataFrame,
+        ...   'ship_lines': Ship DataFrame,
+        ...   'order_attr': order_attr DataFrame},
+        ...   'order_prices': order_prices DataFrame},
         """
         if isinstance(shopify_config, dict):
             self.update_config({'shopify': shopify_config})
@@ -254,7 +245,7 @@ class ShopifyApp:
         Yields
         ------
         Iterator[dict]: dictionary of dataframes for customers enpoint
-            >>> [('Customers', <pandas.DataFrame>)]
+            >>> [('customers', <pandas.DataFrame>)]
         """
         if isinstance(shopify_config, dict):
             self.update_config({'shopify': shopify_config})
@@ -293,16 +284,16 @@ class ShopifyApp:
         >>> app = ShopifyApp()
         >>> orders_dict = app.orders_full_df(shopify_config=shopify_config)
         >>> orders_dict.items()
-        ...    [('Orders', DataFrame),
-        ...    ('Refunds', DataFrame),
-        ...    ('LineItems', DataFrame),
-        ...    ('RefundLineItem', DataFrame),
-        ...    ('Adjustments', DataFrame),
-        ...    ('DiscountApps', DataFrame),
-        ...    ('DiscountCodes', DataFrame),
-        ...    ('ShipLines', DataFrame),
-        ...    ('OrderAttr', DataFrame),
-        ...    ('OrderPrices', DataFrame)]
+        ...    [('orders', DataFrame),
+        ...    ('refunds', DataFrame),
+        ...    ('line_items', DataFrame),
+        ...    ('refund_line_item', DataFrame),
+        ...    ('adjustments', DataFrame),
+        ...    ('discount_apps', DataFrame),
+        ...    ('discount_codes', DataFrame),
+        ...    ('ship_lines', DataFrame),
+        ...    ('order_attr', DataFrame),
+        ...    ('order_prices', DataFrame)]
         """
         if isinstance(shopify_config, dict):
             self.update_config({'shopify': shopify_config})
@@ -345,7 +336,7 @@ class ShopifyApp:
         >>> customers_dict = app.customers_full_df(
         ... shopify_config=shopify_config)
         >>> customers_dict.items()
-        ... [('Customers', <pandas.DataFrame>)]
+        ... [('customers', <pandas.DataFrame>)]
         """
         if isinstance(shopify_config, dict):
             self.update_config({'shopify': shopify_config})
@@ -555,9 +546,9 @@ class ShopifyApp:
                            write_csv=write_csv, csv_operation='w',
                            config=config)
 
-    def products__inventory_writer(self, write_sql: bool = False,
-                                   write_csv: bool = False,
-                                   config: Optional[dict] = None) -> None:
+    def products_inventory_writer(self, write_sql: bool = False,
+                                  write_csv: bool = False,
+                                  config: Optional[dict] = None) -> None:
         """Write products and inventory data
 
         Arguments
@@ -597,11 +588,11 @@ class ShopifyApp:
         Return value is a dictionary of DataFrames for each table:
         >>> products_inventory = app.get_products_inventory()
         >>> products_inventory = {
-        ...     'Products': products_df,
-        ...     'Options': options_df,
-        ...     'Variants': variants_df,
-        ...     'InventoryLocations': inventory_locations_df,
-        ...     'InventoryLevels': inventory_levels_df
+        ...     'products': products_df,
+        ...     'options': options_df,
+        ...     'variants': variants_df,
+        ...     'inventory_locations': inventory_locations_df,
+        ...     'inventory_levels': inventory_levels_df
         ... }
 
         See Also
@@ -612,7 +603,7 @@ class ShopifyApp:
         """
         products = self.get_products()
         inventory_locations = self.get_inventory_locations()
-        inventory_df = inventory_locations.get('InventoryLocations')
+        inventory_df = inventory_locations.get('inventory_locations')
         if isinstance(inventory_df, DataFrame):
             locations = list(inventory_df.id)
         else:
@@ -635,15 +626,15 @@ class ShopifyApp:
         Examples
         --------
         >>> app.get_products() = {
-        ...     'Products': DataFrame,
-        ...     'Variants': DataFrame,
-        ...     'ProductOptions': DataFrame
+        ...     'products': DataFrame,
+        ...     'variants': DataFrame,
+        ...     'product_options': DataFrame
         ... }
         """
         products: Dict[str, DataFrame] = {}
         for products_data in self.__products_runner():
             if len(products_data) == 0:
-                return {'Products': None}
+                return {'products': None}
             products = combine_dicts(products, products_data)
         return products
 
@@ -655,9 +646,9 @@ class ShopifyApp:
             location = response.get('locations')
             locations.extend(location)
         if len(locations) == 0:
-            return {"InventoryLocations": None}
+            return {"inventory_locations": None}
         loc_df = locations_parse(locations)
-        return {"InventoryLocations": loc_df}
+        return {"inventory_locations": loc_df}
 
     def inventory_locations_writer(self, write_csv: bool = False,
                                    write_sql: bool = False,
@@ -684,18 +675,15 @@ class ShopifyApp:
             logger.error("No output enabled")
         if config is not None:
             self.update_config(config)
-        if write_sql is True:
-            if self.engine is None:
-                self.__init_engine()
-            if self.engine is None or self.sql_merge is None:
-                raise Exception("Unable to initialize SQL Engine")
 
         locations = self.get_inventory_locations()
-        if locations.get('InventoryLocations') is None:
+        if locations.get('inventory_locations') is None:
             logger.debug("No locations found")
             return
-        if self.sql_merge is not None:
-            self.sql_merge(locations, 0, self.engine, self.sql_config)
+        # if self.sql_merge is not None:
+        #     self.sql_merge(locations, 0, self.engine, self.sql_config)
+        if self.db_writer is not None:
+            self.db_writer.sql_merge(locations)
         return
 
     def inventory_levels_writer(self, write_csv: bool = False,
@@ -719,7 +707,7 @@ class ShopifyApp:
         if config is not None:
             self.update_config(config)
         inv = self.get_inventory_levels()
-        if inv.get('InventoryLevels') is None:
+        if inv.get('inventory_levels') is None:
             logger.debug("No inventory levels found")
             return
         if write_sql is True:
@@ -741,18 +729,20 @@ class ShopifyApp:
 
         Returns
         -------
-        DataFrame
+        Dict[str, DataFrame]
             DataFrame of all inventory levels
+            {'inventory_levels': DataFrame}
         """
-        if self.engine is None:
-            self.__init_engine()
+
+        if self.db_writer is None:
+            raise Exception("Unable to initialize DBWriter")
         url = self.__url_builder('inventory_levels.json')
         item_list = []
         if locations is None or len(locations) == 0:
-            locations_df = self.get_inventory_locations().get('InventoryLocations')
+            locations_df = self.get_inventory_locations().get('inventory_locations')
             if locations_df is None:
                 logger.error("No inventory locations found")
-                return {'InventoryLevels': None}
+                return {'inventory_levels': None}
             locations = list(locations_df['id'])
         if isinstance(locations, str):
             locations_str = locations
@@ -780,7 +770,7 @@ class ShopifyApp:
                     inventory_levels = items.get('inventory_levels')
                     if len(inventory_levels) == 0:
                         break
-                    item_list.extend(items.get('InventoryLevels'))
+                    item_list.extend(items.get('inventory_levels'))
         else:
             for items in self.__request_runner(url,
                                                params={'location_ids': locations_str}):
@@ -789,9 +779,9 @@ class ShopifyApp:
                     break
                 item_list.extend(inventory_levels)
         if len(item_list) == 0:
-            return {"InventoryLevels": None}
+            return {"inventory_levels": None}
         parsed_levels = inventory_levels_parse(item_list)
-        return {"InventoryLevels": parsed_levels}
+        return {"inventory_levels": parsed_levels}
 
     def inventory_table(self, product_ids: Optional[List[int]] = None,
                         location_ids: Optional[List[int]] = None,
@@ -809,8 +799,8 @@ class ShopifyApp:
             List of variant ID's to get inventory levels for. Defaults to all variants.
         """
         prod_dict = self.get_products()
-        products: DataFrame = prod_dict.get('Products')
-        variants = prod_dict.get('Variants')
+        products: DataFrame = prod_dict.get('products')
+        variants = prod_dict.get('variants')
         if products is None:
             logger.error("No products found")
             return None
@@ -826,9 +816,9 @@ class ShopifyApp:
                                   suffixes=('_prod', '_var'), how='inner')
         if location_ids is not None and len(location_ids) > 0:
             inv_levels = self.get_inventory_levels(
-                locations=location_ids).get('InventoryLevels')
+                locations=location_ids).get('inventory_levels')
         else:
-            inv_levels = self.get_inventory_levels().get('InventoryLevels')
+            inv_levels = self.get_inventory_levels().get('inventory_levels')
         if inv_levels is None:
             return None
         inv_levels = inv_levels.loc[inv_levels['inventory_item_id'].isin(
@@ -845,11 +835,8 @@ class ShopifyApp:
 
     def __sql_writer(self, data: Dict[str, DataFrame], j: int = 0) -> bool:
         """Internal SQL Checks and writer."""
-        if self.engine is None:
-            self.__init_engine()
-        if self.engine is None or self.sql_merge is None:
-            raise Exception("Unable to initialize SQL Engine")
-        return self.sql_merge(data, j, self.engine, self.sql_config)
+        return self.db_writer.sql_merge(data, j)
+        # return self.sql_merge(data, j, self.engine, self.sql_config)
 
     def __csv_writer(self, data: Dict[str, DataFrame],
                      csv_operation: Optional[str] = None) -> bool:
@@ -907,9 +894,9 @@ class ShopifyApp:
             except StopIteration:
                 break
             table_dict = {
-                'Customers': customers_work(resp_data)
+                'customers': customers_work(resp_data)
             }
-            if table_dict.get('Customers') is None:
+            if table_dict.get('customers') is None:
                 break
             yield table_dict
             i += 1
